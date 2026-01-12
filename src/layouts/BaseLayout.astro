@@ -1,0 +1,36 @@
+---
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = 'René Galindo — Product Design Leader',
+} = Astro.props;
+
+const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body class="bg-white text-gray-900 antialiased">
+    <div class="min-h-screen flex flex-col">
+      <Header />
+      <main class="flex-1 w-full max-w-2xl mx-auto px-4 py-8 sm:py-12">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+  </body>
+</html>
