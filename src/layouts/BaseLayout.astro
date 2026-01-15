@@ -5,32 +5,87 @@ import Footer from '@/components/Footer.astro';
 interface Props {
   title: string;
   description?: string;
+  hideFooter?: boolean;
 }
 
 const {
   title,
-  description = 'René Galindo — Product Design Leader',
+  description = 'René Galindo',
+  hideFooter = false,
 } = Astro.props;
 
 const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`;
+const pageTitle = title === 'René Galindo' ? undefined : title;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scrollbar-gutter-stable">
   <head>
+    <style is:global>
+      .scrollbar-gutter-stable {
+        scrollbar-gutter: stable;
+      }
+      /* Firefox */
+      html {
+        scrollbar-width: thin;
+        scrollbar-color: #d1d5db transparent;
+      }
+      /* WebKit (Chrome, Safari, Edge) */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 4px;
+      }
+      /* GT America Font */
+      @font-face {
+        font-family: 'GT America';
+        src: url('/fonts/GT-America-Standard-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'GT America';
+        src: url('/fonts/GT-America-Standard-Medium.woff2') format('woff2');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      /* Minimal link style */
+      main a {
+        color: inherit;
+        text-decoration: underline dotted;
+        text-decoration-color: currentColor;
+        text-underline-offset: 3px;
+        transition: color 0.15s ease, text-decoration-color 0.15s ease;
+      }
+      main a:hover {
+        color: #1d4ed8;
+        text-decoration-color: #1d4ed8;
+      }
+      main a:active {
+        color: #1e40af;
+        text-decoration-color: #1e40af;
+      }
+    </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
   </head>
-  <body class="bg-white text-gray-900 antialiased">
+  <body class="bg-gray-50 text-gray-900 antialiased" style="font-family: 'GT America', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
     <div class="min-h-screen flex flex-col">
-      <Header />
-      <main class="flex-1 w-full max-w-2xl mx-auto px-4 py-8 sm:py-12">
+      <Header pageTitle={pageTitle} />
+      <main class="flex-1 w-full max-w-2xl mx-auto px-4 py-8 sm:py-12 pb-24 text-lg">
         <slot />
       </main>
-      <Footer />
+      {!hideFooter && <Footer />}
     </div>
   </body>
 </html>

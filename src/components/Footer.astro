@@ -1,33 +1,12 @@
 ---
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/stack', label: 'Stack' },
-  { href: '/work', label: 'Work' },
-  { href: '/contact', label: 'Contact' },
-];
-
-const currentPath = Astro.url.pathname;
-const currentYear = new Date().getFullYear();
 ---
 
-<footer class="w-full max-w-2xl mx-auto px-4 py-8 border-t border-gray-100">
-  <nav>
-    <ul class="flex items-center gap-6 text-sm">
-      {navLinks.map((link) => (
-        <li>
-          <a
-            href={link.href}
-            class:list={[
-              'hover:text-gray-600 transition-colors',
-              currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href))
-                ? 'text-gray-900 font-medium'
-                : 'text-gray-500',
-            ]}
-          >
-            {link.label}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </nav>
+<footer class="fixed bottom-0 left-0 right-0 bg-gray-50 w-full">
+  <div class="w-full max-w-2xl mx-auto px-4 py-6 border-t border-gray-100">
+    <div class="flex items-center justify-center text-sm text-gray-500">
+      <a href="mailto:hello@renegalindo.com" class="hover:text-gray-900 transition-colors">
+        Say hello 👋
+      </a>
+    </div>
+  </div>
 </footer>
