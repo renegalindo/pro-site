@@ -1,4 +1,5 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 
@@ -65,12 +66,26 @@ const pageTitle = title === 'René Galindo' ? undefined : title;
         transition: color 0.15s ease, text-decoration-color 0.15s ease;
       }
       main a:hover {
-        color: #1d4ed8;
-        text-decoration-color: #1d4ed8;
+        color: #6b7280;
+        text-decoration-color: #6b7280;
       }
       main a:active {
-        color: #1e40af;
-        text-decoration-color: #1e40af;
+        color: #4b5563;
+        text-decoration-color: #4b5563;
+      }
+      /* Old content disappears instantly, new content fades in */
+      ::view-transition-old(main) {
+        animation-duration: 0s;
+      }
+      ::view-transition-new(main) {
+        animation-duration: 0.75s;
+      }
+      /* Page title: old fades out with menu items, new fades in with content */
+      ::view-transition-old(page-title) {
+        animation-duration: 0.15s; /* Matches dropdown menu fade-out */
+      }
+      ::view-transition-new(page-title) {
+        animation-duration: 0.75s; /* Matches content fade-in */
       }
     </style>
     <meta charset="UTF-8" />
@@ -78,14 +93,15 @@ const pageTitle = title === 'René Galindo' ? undefined : title;
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    <ViewTransitions />
   </head>
   <body class="bg-gray-50 text-gray-900 antialiased" style="font-family: 'GT America', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
     <div class="min-h-screen flex flex-col">
-      <Header pageTitle={pageTitle} />
-      <main class="flex-1 w-full max-w-2xl mx-auto px-4 py-8 sm:py-12 pb-24 text-lg">
+      <Header pageTitle={pageTitle} transition:name="header" transition:persist />
+      <main class="flex-1 w-full max-w-2xl mx-auto px-4 py-8 sm:py-12 pb-24 text-lg" transition:name="main" transition:animate="fade">
         <slot />
       </main>
-      {!hideFooter && <Footer />}
+      {!hideFooter && <Footer transition:name="footer" transition:persist />}
     </div>
   </body>
 </html>

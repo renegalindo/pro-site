@@ -22,15 +22,15 @@ const dropdownLinks = navLinks.filter(link => {
 ---
 
 <header class="sticky top-0 z-10 w-full bg-gray-50">
-  <div class="max-w-2xl mx-auto px-4 pt-20 pb-4">
+  <div class="max-w-2xl mx-auto px-4 pt-24 pb-4">
     <div class="flex items-center gap-6">
       <button id="header-menu-button" class="flex items-center gap-4 hover:text-gray-600 transition-colors" aria-label="Toggle menu">
-        <img id="header-avatar" src="/avatar.png" alt="René Galindo" class="w-10 h-10 rounded-full transition-all duration-200 ease-in-out hover:scale-110" />
-        {pageTitle && <h1 class="text-2xl font-medium text-gray-900 hover:text-gray-900">{pageTitle}</h1>}
+        <img id="header-avatar" src="/avatar.png" alt="René Galindo" class="w-10 h-10 rounded-full transition-all duration-200 ease-in-out" />
+        {pageTitle && <h1 class="text-lg font-medium text-gray-900 hover:text-gray-900" transition:name="page-title">{pageTitle}</h1>}
       </button>
 
       <nav id="header-dropdown" class="opacity-0 -translate-x-2 pointer-events-none transition-all duration-150 ease-out">
-        <ul class="flex items-center gap-6 text-2xl">
+        <ul class="flex items-center gap-6 text-lg">
           {dropdownLinks.map((link) => (
             <li>
               <a
@@ -53,11 +53,13 @@ const dropdownLinks = navLinks.filter(link => {
 </header>
 
 <script>
-  const button = document.getElementById('header-menu-button');
-  const dropdown = document.getElementById('header-dropdown');
-  const avatar = document.getElementById('header-avatar');
+  function setupHeader() {
+    const button = document.getElementById('header-menu-button');
+    const dropdown = document.getElementById('header-dropdown');
+    const avatar = document.getElementById('header-avatar');
 
-  if (button && dropdown && avatar) {
+    if (!button || !dropdown || !avatar) return;
+
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       const isOpen = dropdown.classList.contains('opacity-100');
@@ -86,16 +88,18 @@ const dropdownLinks = navLinks.filter(link => {
       }
     });
 
-    // When clicking a link, instantly hide dropdown without animation
+    // When clicking a link, fade out dropdown in place (no slide)
     dropdown.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
       if (target && target.tagName === 'A') {
-        // Disable transitions temporarily on dropdown
-        dropdown.style.transition = 'none';
-        // Instantly hide dropdown
-        dropdown.classList.remove('opacity-100', 'translate-x-0');
-        dropdown.classList.add('opacity-0', '-translate-x-2', 'pointer-events-none');
+        // Fade out in place - keep translate-x-0, only change opacity
+        dropdown.classList.remove('opacity-100');
+        dropdown.classList.add('opacity-0', 'pointer-events-none');
+        avatar.classList.remove('rotate-[20deg]');
       }
     });
   }
+
+  // Run on initial load and after each view transition
+  document.addEventListener('astro:page-load', setupHeader);
 </script>
