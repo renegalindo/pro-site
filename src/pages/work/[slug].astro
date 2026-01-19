@@ -2,7 +2,6 @@
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import ContentModal from '@/components/ContentModal.astro';
 
 export async function getStaticPaths() {
   const work = await getCollection('work');
@@ -17,8 +16,75 @@ interface Props {
 }
 
 const { project } = Astro.props;
+const { Content } = await project.render();
 ---
 
-<BaseLayout title="Work" description={project.data.description}>
-  <ContentModal {project} slot="modal" />
+<BaseLayout title="Work" description={project.data.description} hideHeader={true} backLink={{ href: "/work", label: "Back to work" }}>
+  <div class="pt-12 space-y-8">
+    <header class="space-y-4">
+      <h1 class="text-2xl font-medium text-gray-900">{project.data.title}</h1>
+      {(project.data.company || project.data.role || project.data.year) && (
+        <p class="text-gray-500">
+          {project.data.company && <span>{project.data.company}</span>}
+          {project.data.company && project.data.role && <span> · </span>}
+          {project.data.role && <span>{project.data.role}</span>}
+          {(project.data.company || project.data.role) && project.data.year && <span> · </span>}
+          {project.data.year && <span>{project.data.year}</span>}
+        </p>
+      )}
+    </header>
+    <article class="prose">
+      <Content />
+    </article>
+  </div>
 </BaseLayout>
+
+<style>
+  .prose {
+    @apply text-gray-700 leading-relaxed;
+  }
+
+  .prose :global(h2) {
+    @apply text-xl font-medium text-gray-900 mt-8 mb-4;
+  }
+
+  .prose :global(h3) {
+    @apply text-lg font-medium text-gray-900 mt-6 mb-3;
+  }
+
+  .prose :global(p) {
+    @apply mb-4;
+  }
+
+  .prose :global(ul) {
+    @apply list-disc pl-6 mb-4;
+  }
+
+  .prose :global(li) {
+    @apply mb-2;
+  }
+
+  .prose :global(a) {
+    @apply underline hover:text-gray-600;
+  }
+</style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    if (!window.location.pathname.startsWith('/work/') || window.location.pathname === '/work/') return;
+
+    const controller = new AbortController();
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = '/work';
+      }
+    }, { signal: controller.signal, capture: true });
+
+    document.addEventListener('astro:before-preparation', () => {
+      controller.abort();
+    }, { once: true });
+  });
+</script>

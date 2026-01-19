@@ -4,84 +4,29 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 
 const work = await getCollection('work');
 const sortedWork = work.sort((a, b) => a.data.order - b.data.order);
-
-const experience = [
-  {
-    company: 'Factorial',
-    period: '2024 - 2025',
-    description: "Design system, Home, Profile, and other pages.",
-  },
-  {
-    company: 'Invopop',
-    period: '2021 - 2023',
-    description: 'Factorial One Design System, Home, Profile, and other pages.',
-  },
-  {
-    company: 'Lana',
-    period: '2018 - 2021',
-    description: 'Co-founded as a Cabify spin-off. Led product design and brand teams.',
-  },
-  {
-    company: 'Cabify',
-    period: '2016 - 2018',
-    description: 'Led the purple rebrand, Rider app redesign, and Movo scooter-sharing launch.',
-  },
-  {
-    company: 'Yaxi',
-    period: '2014 - 2015',
-    description: "Founding designer of México's first ride-hailing app. Acquired by Cabify.",
-  },
-];
 ---
 
 <BaseLayout title="Work" description="Selected work by René Galindo">
-  <div class="space-y-12">
-    <!-- Experience Timeline -->
-    <section class="space-y-8">
-      {experience.map((job) => (
-        <article class="space-y-2">
-          <h2 class="font-medium text-gray-900">
-            {job.company}
-          </h2>
-          <p class="text-gray-500">
-            {job.period}
+  <div class="space-y-6">
+    {sortedWork.map((project) => (
+      <article class="space-y-2 -mx-4 px-4 py-3">
+        <h2 class="font-medium text-gray-900">
+          <a
+            href={`/work/${project.slug}`}
+            class="hover:underline"
+          >
+            {project.data.title}
+          </a>
+        </h2>
+        {project.data.year && (
+          <p class="text-sm text-gray-500">
+            {project.data.year}
           </p>
-          <p class="text-gray-700">
-            {job.description}
-          </p>
-        </article>
-      ))}
-    </section>
-
-    <!-- Case Studies -->
-    {sortedWork.length > 0 && (
-      <div class="border-t border-gray-100 pt-12">
-        <h2 class="text-xl font-medium text-gray-900 mb-8">Featured Work</h2>
-        <div class="space-y-6">
-          {sortedWork.map((project) => (
-            <a
-              href={`/work/${project.slug}`}
-              class="block group hover:bg-gray-50 -mx-4 px-4 py-3 rounded-lg transition-colors"
-            >
-              <article class="space-y-2">
-                <h3 class="font-medium text-gray-900 group-hover:text-gray-600 transition-colors">
-                  {project.data.title}
-                </h3>
-                {(project.data.company || project.data.year) && (
-                  <p class="text-sm text-gray-500">
-                    {project.data.company && <span>{project.data.company}</span>}
-                    {project.data.company && project.data.year && <span> · </span>}
-                    {project.data.year && <span>{project.data.year}</span>}
-                  </p>
-                )}
-                <p class="text-gray-700">
-                  {project.data.description}
-                </p>
-              </article>
-            </a>
-          ))}
-        </div>
-      </div>
-    )}
+        )}
+        <p class="text-gray-700">
+          {project.data.description}
+        </p>
+      </article>
+    ))}
   </div>
 </BaseLayout>

@@ -1,9 +1,10 @@
 ---
 interface Props {
   pageTitle?: string;
+  hidden?: boolean;
 }
 
-const { pageTitle } = Astro.props;
+const { pageTitle, hidden = false } = Astro.props;
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -24,12 +25,15 @@ const dropdownLinks = currentPath === '/'
   : navLinks.filter(link => !isActive(link.href));
 ---
 
-<header class="sticky top-0 z-10 w-full bg-gray-50">
+<header class:list={[
+  "top-0 z-10 w-full bg-gray-50",
+  hidden ? "absolute opacity-0 pointer-events-none" : "sticky"
+]}>
   <div class="max-w-2xl mx-auto px-4 pt-12 pb-4">
     <div class="flex items-center gap-6">
       <button id="header-menu-button" class="flex items-center gap-4 hover:text-gray-600 transition-colors" aria-label="Toggle menu">
         <img id="header-avatar" src="/avatar.png" alt="René Galindo" class="w-10 h-10 rounded-full transition-all duration-200 ease-in-out" />
-        {pageTitle && <h1 class="text-lg font-medium text-gray-900 hover:text-gray-900" transition:name="page-title">{pageTitle}</h1>}
+        {pageTitle && <h1 class="text-lg font-medium text-gray-900 hover:text-gray-900">{pageTitle}</h1>}
       </button>
 
       <nav id="header-dropdown" class="opacity-0 -translate-x-2 pointer-events-none transition-all duration-150 ease-out">
