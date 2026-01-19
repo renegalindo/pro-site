@@ -87,17 +87,17 @@ const pageTitle = title === 'René Galindo' ? undefined : title;
       }
       /* Modal backdrop fade */
       ::view-transition-old(modal-backdrop) {
-        animation: fade-out 0.3s ease-out;
+        animation: fade-out 0.3s ease-in-out;
       }
       ::view-transition-new(modal-backdrop) {
-        animation: fade-in 0.3s ease-out;
+        animation: fade-in 0.3s ease-in-out;
       }
       /* Modal card fade + scale */
       ::view-transition-old(modal-card) {
-        animation: scale-fade-out 0.3s ease-out;
+        animation: scale-fade-out 0.3s ease-in-out;
       }
       ::view-transition-new(modal-card) {
-        animation: scale-fade-in 0.3s ease-out;
+        animation: scale-fade-in 0.3s ease-in-out;
       }
       /* Fade in with gentle scale up */
       @keyframes scale-fade-in {
