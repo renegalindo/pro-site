@@ -9,20 +9,23 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/work', label: 'Work' },
   { href: '/stack', label: 'Stack' },
+  { href: '/now', label: 'Now' },
 ];
 
 const currentPath = Astro.url.pathname;
 
+// Helper to check if a link matches current path
+const isActive = (href: string) =>
+  currentPath === href || (href !== '/' && currentPath.startsWith(href));
+
 // Filter out current page from dropdown, unless it's home
-const dropdownLinks = navLinks.filter(link => {
-  if (currentPath === '/') return true; // Show all links on home
-  const isCurrentPage = currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href));
-  return !isCurrentPage; // Hide current page from dropdown
-});
+const dropdownLinks = currentPath === '/'
+  ? navLinks
+  : navLinks.filter(link => !isActive(link.href));
 ---
 
 <header class="sticky top-0 z-10 w-full bg-gray-50">
-  <div class="max-w-2xl mx-auto px-4 pt-24 pb-4">
+  <div class="max-w-2xl mx-auto px-4 pt-12 pb-4">
     <div class="flex items-center gap-6">
       <button id="header-menu-button" class="flex items-center gap-4 hover:text-gray-600 transition-colors" aria-label="Toggle menu">
         <img id="header-avatar" src="/avatar.png" alt="René Galindo" class="w-10 h-10 rounded-full transition-all duration-200 ease-in-out" />
@@ -37,9 +40,7 @@ const dropdownLinks = navLinks.filter(link => {
                 href={link.href}
                 class:list={[
                   'hover:text-gray-600 transition-colors',
-                  currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href))
-                    ? 'text-gray-900 font-medium'
-                    : 'text-gray-500',
+                  isActive(link.href) ? 'text-gray-900 font-medium' : 'text-gray-500',
                 ]}
               >
                 {link.label}
@@ -60,46 +61,43 @@ const dropdownLinks = navLinks.filter(link => {
 
     if (!button || !dropdown || !avatar) return;
 
+    const closeDropdown = (keepPosition = false) => {
+      dropdown.classList.remove('opacity-100');
+      if (!keepPosition) {
+        dropdown.classList.remove('translate-x-0');
+        dropdown.classList.add('-translate-x-2');
+      }
+      dropdown.classList.add('opacity-0', 'pointer-events-none');
+      avatar.classList.remove('rotate-[20deg]');
+    };
+
+    const openDropdown = () => {
+      avatar.classList.add('rotate-[20deg]');
+      setTimeout(() => {
+        dropdown.classList.remove('opacity-0', '-translate-x-2', 'pointer-events-none');
+        dropdown.classList.add('opacity-100', 'translate-x-0');
+      }, 135);
+    };
+
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       const isOpen = dropdown.classList.contains('opacity-100');
-
-      if (isOpen) {
-        // Closing: hide dropdown, rotate back
-        dropdown.classList.remove('opacity-100', 'translate-x-0');
-        dropdown.classList.add('opacity-0', '-translate-x-2', 'pointer-events-none');
-        avatar.classList.remove('rotate-[20deg]');
-      } else {
-        // Opening: rotate first, then show dropdown after animation completes
-        avatar.classList.add('rotate-[20deg]');
-        setTimeout(() => {
-          dropdown.classList.remove('opacity-0', '-translate-x-2', 'pointer-events-none');
-          dropdown.classList.add('opacity-100', 'translate-x-0');
-        }, 135);
-      }
+      isOpen ? closeDropdown() : openDropdown();
     });
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', () => {
       if (dropdown.classList.contains('opacity-100')) {
-        dropdown.classList.remove('opacity-100', 'translate-x-0');
-        dropdown.classList.add('opacity-0', '-translate-x-2', 'pointer-events-none');
-        avatar.classList.remove('rotate-[20deg]');
+        closeDropdown();
       }
     });
 
-    // When clicking a link, fade out dropdown in place (no slide)
     dropdown.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
-      if (target && target.tagName === 'A') {
-        // Fade out in place - keep translate-x-0, only change opacity
-        dropdown.classList.remove('opacity-100');
-        dropdown.classList.add('opacity-0', 'pointer-events-none');
-        avatar.classList.remove('rotate-[20deg]');
+      if (target?.tagName === 'A') {
+        closeDropdown(true); // Keep position, just fade out
       }
     });
   }
 
-  // Run on initial load and after each view transition
   document.addEventListener('astro:page-load', setupHeader);
 </script>

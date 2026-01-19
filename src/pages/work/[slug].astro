@@ -1,0 +1,24 @@
+---
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ContentModal from '@/components/ContentModal.astro';
+
+export async function getStaticPaths() {
+  const work = await getCollection('work');
+  return work.map((project) => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<'work'>;
+}
+
+const { project } = Astro.props;
+---
+
+<BaseLayout title="Work" description={project.data.description}>
+  <ContentModal {project} slot="modal" />
+</BaseLayout>

@@ -6,13 +6,11 @@ import Footer from '@/components/Footer.astro';
 interface Props {
   title: string;
   description?: string;
-  hideFooter?: boolean;
 }
 
 const {
   title,
   description = 'René Galindo',
-  hideFooter = false,
 } = Astro.props;
 
 const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`;
@@ -80,12 +78,65 @@ const pageTitle = title === 'René Galindo' ? undefined : title;
       ::view-transition-new(main) {
         animation-duration: 0.75s;
       }
-      /* Page title: old fades out with menu items, new fades in with content */
+      /* Page title: old disappears instantly, new fades in with content */
       ::view-transition-old(page-title) {
-        animation-duration: 0.15s; /* Matches dropdown menu fade-out */
+        animation-duration: 0s; /* Instant disappear */
       }
       ::view-transition-new(page-title) {
         animation-duration: 0.75s; /* Matches content fade-in */
+      }
+      /* Modal backdrop fade */
+      ::view-transition-old(modal-backdrop) {
+        animation: fade-out 0.3s ease-out;
+      }
+      ::view-transition-new(modal-backdrop) {
+        animation: fade-in 0.3s ease-out;
+      }
+      /* Modal card fade + scale */
+      ::view-transition-old(modal-card) {
+        animation: scale-fade-out 0.3s ease-out;
+      }
+      ::view-transition-new(modal-card) {
+        animation: scale-fade-in 0.3s ease-out;
+      }
+      /* Fade in with gentle scale up */
+      @keyframes scale-fade-in {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      /* Fade out with gentle scale down */
+      @keyframes scale-fade-out {
+        from {
+          opacity: 1;
+          transform: scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+      }
+      /* Fade animations */
+      @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes fade-out {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+      /* Prevent body scroll when modal is open */
+      body:has(#modal-backdrop) {
+        overflow: hidden;
+      }
+      /* Base font family */
+      body {
+        font-family: 'GT America', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       }
     </style>
     <meta charset="UTF-8" />
@@ -95,13 +146,15 @@ const pageTitle = title === 'René Galindo' ? undefined : title;
     <meta name="description" content={description} />
     <ViewTransitions />
   </head>
-  <body class="bg-gray-50 text-gray-900 antialiased" style="font-family: 'GT America', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <body class="bg-gray-50 text-gray-900 antialiased">
     <div class="min-h-screen flex flex-col">
       <Header pageTitle={pageTitle} transition:name="header" transition:persist />
-      <main class="flex-1 w-full max-w-2xl mx-auto px-4 py-8 sm:py-12 pb-24 text-lg" transition:name="main" transition:animate="fade">
+      <main class="flex-1 w-full max-w-2xl mx-auto px-4 pt-4 sm:pt-6 pb-24 text-lg" transition:name="main" transition:animate="fade">
         <slot />
       </main>
-      {!hideFooter && <Footer transition:name="footer" transition:persist />}
+      <Footer transition:name="footer" transition:persist />
     </div>
+    <!-- Modal slot renders at body level, outside flex container -->
+    <slot name="modal" />
   </body>
 </html>
