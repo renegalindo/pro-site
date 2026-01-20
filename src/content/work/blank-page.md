@@ -1,11 +1,12 @@
 ---
 title: "Blank Page"
 description: "The simplest way to write online."
-year: "2020-Present"
+year: "Current"
 featured: false
 sideProject: true
 order: 1
 color: "bg-teal-100"
+logo: "/logos/blankdotpage_logo.jpeg"
 ---
 
 ## Overview

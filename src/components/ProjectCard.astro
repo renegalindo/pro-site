@@ -4,21 +4,30 @@ interface Props {
   title: string;
   description: string;
   year?: string;
-  color?: string;
+  logo?: string;
 }
 
-const { href, title, description, year, color } = Astro.props;
+const { href, title, description, year, logo } = Astro.props;
 ---
 
-<a href={href} class="flex gap-3 -mx-4 px-4 py-3 rounded-xl no-underline hover:bg-gray-100 transition-colors">
-  <div class={`w-12 h-12 rounded-xl shrink-0 ${color || 'bg-gray-100'}`}></div>
-  <div class=" flex-1 text-[17px]">
+<a href={href} class="group flex items-center gap-3 -mx-4 px-4 py-3 rounded-lg no-underline hover:bg-gray-100 transition-colors duration-150 relative">
+  <!-- {logo && (
+    <div class="w-12 h-12 rounded-xl shrink-0 overflow-hidden">
+      <img src={logo} alt="" class="w-full h-full object-cover" />
+    </div>
+  )} -->
+  <div class="flex-1 text-[17px]">
     <div class="flex items-baseline justify-between gap-2">
       <h2 class="font-medium text-gray-900">{title}</h2>
       {year && (
-        <span class="text-gray-500 text-base">{year.replace(/-20/, '-')}</span>
+        <span class="text-gray-500 text-base transition-opacity duration-100 group-hover:opacity-0">{year.replace(/-20/, '-')}</span>
       )}
     </div>
     <p class="text-gray-500 -mt-0.5">{description}</p>
   </div>
+  {logo && (
+    <div class="absolute right-4 top-1/2 -translate-y-1/2 w-16 h-12 rounded-lg overflow-hidden opacity-0 group-hover:opacity-100 transition-all duration-150">
+      <img src={logo} alt="" class="w-full h-full object-cover" />
+    </div>
+  )}
 </a>

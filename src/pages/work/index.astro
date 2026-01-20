@@ -10,7 +10,7 @@ const sideProjects = work.filter(p => p.data.sideProject).sort((a, b) => a.data.
 
 <BaseLayout title="Work" description="Selected work by René Galindo" hideFooter>
 
-
+  <h2 class="mb-2 text-gray-500 text-base pb-2">Companies</h2>
   <div class="space-y-0">
     {mainProjects.map((project) => (
       <ProjectCard
@@ -18,12 +18,12 @@ const sideProjects = work.filter(p => p.data.sideProject).sort((a, b) => a.data.
         title={project.data.title}
         description={project.data.description}
         year={project.data.year}
-        color={project.data.color}
+        logo={project.data.logo}
       />
     ))}
   </div>
 
-  <h2 class="mt-8 mb-2 text-gray-500 text-base">Projects</h2>
+  <h2 class="mt-8 mb-2 text-gray-500 text-base pb-2">Projects</h2>
   <div class="space-y-0">
     {sideProjects.map((project) => (
       <ProjectCard
@@ -31,7 +31,7 @@ const sideProjects = work.filter(p => p.data.sideProject).sort((a, b) => a.data.
         title={project.data.title}
         description={project.data.description}
         year={project.data.year}
-        color={project.data.color}
+        logo={project.data.logo}
       />
     ))}
   </div>

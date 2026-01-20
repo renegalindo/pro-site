@@ -12,6 +12,7 @@ const work = defineCollection({
     sideProject: z.boolean().default(false),
     order: z.number().default(0),
     color: z.string().optional(),
+    logo: z.string().optional(),
   }),
 });
 

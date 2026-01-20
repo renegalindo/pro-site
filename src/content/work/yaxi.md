@@ -7,6 +7,7 @@ year: "2014-2015"
 featured: true
 order: 5
 color: "bg-orange-100"
+logo: "/logos/yaxi_logo.jpeg"
 ---
 
 ## Overview

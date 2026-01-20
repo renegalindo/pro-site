@@ -6,6 +6,7 @@ featured: false
 sideProject: true
 order: 2
 color: "bg-yellow-100"
+logo: "/logos/blankdotpage_logo.jpeg"
 ---
 
 ## Overview
