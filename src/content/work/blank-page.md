@@ -1,10 +1,10 @@
 ---
 title: "Blank Page"
-description: "The simple writing app that's always in your browser."
+description: "The simplest way to write online."
 year: "2020-Present"
 featured: false
 sideProject: true
-order: 2
+order: 1
 color: "bg-teal-100"
 ---
 

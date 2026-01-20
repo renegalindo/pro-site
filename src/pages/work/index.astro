@@ -1,68 +1,38 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
 
 const work = await getCollection('work');
 const mainProjects = work.filter(p => !p.data.sideProject).sort((a, b) => a.data.order - b.data.order);
 const sideProjects = work.filter(p => p.data.sideProject).sort((a, b) => a.data.order - b.data.order);
 ---
 
-<BaseLayout title="Work" description="Selected work by René Galindo">
-  <p class="text-gray-700 mb-8">
-    This section can introduce visitors to your professional background and what they'll find in the projects below.
-  </p>
-  <div class="space-y-2">
+<BaseLayout title="Work" description="Selected work by René Galindo" hideFooter>
+
+
+  <div class="space-y-0">
     {mainProjects.map((project) => (
-      <article class="flex gap-4 -mx-4 px-4 py-3">
-        <div class={`w-14 h-14 rounded-xl shrink-0 -ml-px ${project.data.color || 'bg-gray-100'}`}></div>
-        <div class="space-y-1">
-          <div class="flex items-baseline gap-2">
-            <h2 class="font-medium text-gray-900">
-              <a
-                href={`/work/${project.slug}`}
-                class="no-underline hover:underline"
-              >
-                {project.data.title}
-              </a>
-            </h2>
-            {project.data.year && (
-              <span class="text-gray-400">{project.data.year}</span>
-            )}
-          </div>
-          <p class="text-gray-700">
-            {project.data.description}
-          </p>
-        </div>
-      </article>
+      <ProjectCard
+        href={`/work/${project.slug}`}
+        title={project.data.title}
+        description={project.data.description}
+        year={project.data.year}
+        color={project.data.color}
+      />
     ))}
   </div>
 
-  <p class="text-gray-700 mt-12 mb-8">
-    Side projects I've built over the years.
-  </p>
-  <div class="space-y-2">
+  <h2 class="mt-8 mb-2 text-gray-500 text-base">Projects</h2>
+  <div class="space-y-0">
     {sideProjects.map((project) => (
-      <article class="flex gap-4 -mx-4 px-4 py-3">
-        <div class={`w-14 h-14 rounded-xl shrink-0 -ml-px ${project.data.color || 'bg-gray-100'}`}></div>
-        <div class="space-y-1">
-          <div class="flex items-baseline gap-2">
-            <h2 class="font-medium text-gray-900">
-              <a
-                href={`/work/${project.slug}`}
-                class="no-underline hover:underline"
-              >
-                {project.data.title}
-              </a>
-            </h2>
-            {project.data.year && (
-              <span class="text-gray-400">{project.data.year}</span>
-            )}
-          </div>
-          <p class="text-gray-700">
-            {project.data.description}
-          </p>
-        </div>
-      </article>
+      <ProjectCard
+        href={`/work/${project.slug}`}
+        title={project.data.title}
+        description={project.data.description}
+        year={project.data.year}
+        color={project.data.color}
+      />
     ))}
   </div>
 </BaseLayout>

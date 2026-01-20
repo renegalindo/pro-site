@@ -1,6 +1,6 @@
 ---
 title: "Invopop"
-description: "Factorial One Design System, Home, Profile, and other pages."
+description: "Designed product and brand from zero to one."
 company: "Invopop"
 role: "Product Designer"
 year: "2021-2023"

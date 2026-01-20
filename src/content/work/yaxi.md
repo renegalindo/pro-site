@@ -1,6 +1,6 @@
 ---
 title: "Yaxi"
-description: "Founding designer of México's first ride-hailing app."
+description: "Founding product designer."
 company: "Yaxi"
 role: "Founding Designer"
 year: "2014-2015"

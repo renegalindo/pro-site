@@ -1,6 +1,6 @@
 ---
 title: "Lana"
-description: "Co-founded as a Cabify spin-off. Led product design and brand teams."
+description: "Founding designer, from zero to one."
 company: "Lana"
 role: "Co-founder, Head of Design"
 year: "2018-2021"

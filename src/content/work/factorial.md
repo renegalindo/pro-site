@@ -1,6 +1,6 @@
 ---
 title: "Factorial"
-description: "Design system, Home, Profile, and other pages."
+description: "Led design system revamp."
 company: "Factorial"
 role: "Product Designer"
 year: "2024-2025"

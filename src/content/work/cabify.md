@@ -1,6 +1,6 @@
 ---
 title: "Cabify"
-description: "Led the purple rebrand, Rider app redesign, and Movo app."
+description: "Rebrand, Rider, Movo."
 company: "Cabify"
 role: "Lead Product Designer"
 year: "2016-2018"

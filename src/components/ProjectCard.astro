@@ -1,0 +1,24 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+  year?: string;
+  color?: string;
+}
+
+const { href, title, description, year, color } = Astro.props;
+---
+
+<a href={href} class="flex gap-3 -mx-4 px-4 py-3 rounded-xl no-underline hover:bg-gray-100 transition-colors">
+  <div class={`w-12 h-12 rounded-xl shrink-0 ${color || 'bg-gray-100'}`}></div>
+  <div class=" flex-1 text-[17px]">
+    <div class="flex items-baseline justify-between gap-2">
+      <h2 class="font-medium text-gray-900">{title}</h2>
+      {year && (
+        <span class="text-gray-500 text-base">{year.replace(/-20/, '-')}</span>
+      )}
+    </div>
+    <p class="text-gray-500 -mt-0.5">{description}</p>
+  </div>
+</a>

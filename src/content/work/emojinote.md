@@ -1,10 +1,10 @@
 ---
 title: "Emojinote"
-description: "Organize your notes with emoji. It's really that simple."
+description: "Organize your notes with emoji."
 year: "2018-2019"
 featured: false
 sideProject: true
-order: 1
+order: 2
 color: "bg-yellow-100"
 ---
 
