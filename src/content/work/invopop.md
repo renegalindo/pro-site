@@ -3,7 +3,7 @@ title: "Invopop"
 description: "Factorial One Design System, Home, Profile, and other pages."
 company: "Invopop"
 role: "Product Designer"
-year: "2021 - 2023"
+year: "2021-2023"
 featured: true
 order: 2
 ---

@@ -3,7 +3,7 @@ title: "Factorial"
 description: "Design system, Home, Profile, and other pages."
 company: "Factorial"
 role: "Product Designer"
-year: "2024 - 2025"
+year: "2024-2025"
 featured: true
 order: 1
 ---

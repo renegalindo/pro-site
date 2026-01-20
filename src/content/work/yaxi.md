@@ -3,7 +3,7 @@ title: "Yaxi"
 description: "Founding designer of México's first ride-hailing app. Acquired by Cabify."
 company: "Yaxi"
 role: "Founding Designer"
-year: "2014 - 2015"
+year: "2014-2015"
 featured: true
 order: 5
 ---

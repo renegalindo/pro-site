@@ -1,4 +1,6 @@
 ---
+import { ArrowLeft } from 'lucide-astro';
+
 interface Props {
   backLink?: {
     href: string;
@@ -14,8 +16,9 @@ const { backLink } = Astro.props;
     <div class="flex items-center justify-between text-sm text-gray-500">
       <div>
         {backLink && (
-          <a href={backLink.href} class="hover:text-gray-900 transition-colors">
-            ← {backLink.label}
+          <a href={backLink.href} class="flex items-center gap-1.5 hover:text-gray-900 transition-colors">
+            <ArrowLeft size={16} />
+            {backLink.label}
           </a>
         )}
       </div>
