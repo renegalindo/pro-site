@@ -1,6 +1,6 @@
 ---
 title: "Cabify"
-description: "Rebrand, Rider, Movo."
+description: "Led rebrand, Rider app, and Movo"
 company: "Cabify"
 role: "Lead Product Designer"
 year: "2016-2018"

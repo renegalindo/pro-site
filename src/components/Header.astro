@@ -1,13 +1,12 @@
 ---
 interface Props {
-  pageTitle?: string;
   hidden?: boolean;
 }
 
-const { pageTitle, hidden = false } = Astro.props;
+const { hidden = false } = Astro.props;
 
 const navLinks = [
-  { href: '/', label: 'Home' },
+  { href: '/', label: 'About' },
   { href: '/work', label: 'Work' },
   { href: '/stack', label: 'Stack' },
   { href: '/now', label: 'Now' },
@@ -18,11 +17,6 @@ const currentPath = Astro.url.pathname;
 // Helper to check if a link matches current path
 const isActive = (href: string) =>
   currentPath === href || (href !== '/' && currentPath.startsWith(href));
-
-// Filter out current page from dropdown, unless it's home
-const dropdownLinks = currentPath === '/'
-  ? navLinks
-  : navLinks.filter(link => !isActive(link.href));
 ---
 
 <header class:list={[
@@ -31,14 +25,13 @@ const dropdownLinks = currentPath === '/'
 ]}>
   <div class="max-w-2xl mx-auto px-4 pt-12 pb-4">
     <div class="flex items-center gap-6">
-      <button id="header-menu-button" class="flex items-center gap-4 hover:text-gray-600 transition-colors" aria-label="Toggle menu">
+      <button id="header-menu-button" class="hover:text-gray-600 transition-colors" aria-label="Toggle menu">
         <img id="header-avatar" src="/avatar.png" alt="René Galindo" class="w-10 h-10 rounded-full transition-all duration-200 ease-in-out" />
-        {pageTitle && <h1 class="text-xl font-medium text-gray-900 hover:text-gray-900">{pageTitle}</h1>}
       </button>
 
       <nav id="header-dropdown" class="opacity-0 -translate-x-2 pointer-events-none transition-all duration-150 ease-out">
         <ul class="flex items-center gap-6 text-xl">
-          {dropdownLinks.map((link) => (
+          {navLinks.map((link) => (
             <li>
               <a
                 href={link.href}

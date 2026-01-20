@@ -5,21 +5,31 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 
 export async function getStaticPaths() {
   const work = await getCollection('work');
-  return work.map((project) => ({
-    params: { slug: project.slug },
-    props: { project },
-  }));
+  const mainProjects = work.filter((p) => !p.data.sideProject).sort((a, b) => a.data.order - b.data.order);
+  const sideProjects = work.filter((p) => p.data.sideProject).sort((a, b) => a.data.order - b.data.order);
+  const allProjects = [...mainProjects, ...sideProjects];
+
+  return allProjects.map((project, index) => {
+    const nextProject = allProjects[index + 1] ?? allProjects[0];
+    return {
+      params: { slug: project.slug },
+      props: { project, nextProject },
+    };
+  });
 }
 
 interface Props {
   project: CollectionEntry<'work'>;
+  nextProject: CollectionEntry<'work'>;
 }
 
-const { project } = Astro.props;
+const { project, nextProject } = Astro.props;
 const { Content } = await project.render();
+
+const nextLink = { href: `/work/${nextProject.slug}`, label: "Next" };
 ---
 
-<BaseLayout title="Work" description={project.data.description} hideHeader={true} backLink={{ href: "/work", label: "Back to work" }}>
+<BaseLayout title="Work" description={project.data.description} hideHeader={true} backLink={{ href: "/work", label: "Back to Work" }} nextLink={nextLink}>
   <div class="pt-12 space-y-8">
     <header>
       <h1 class="text-2xl font-medium text-gray-900">{project.data.title}</h1>

@@ -1,6 +1,6 @@
 ---
 title: "Yaxi"
-description: "Founding product designer."
+description: "First product designer"
 company: "Yaxi"
 role: "Founding Designer"
 year: "2014-2015"

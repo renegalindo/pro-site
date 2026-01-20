@@ -12,6 +12,10 @@ interface Props {
     href: string;
     label: string;
   };
+  nextLink?: {
+    href: string;
+    label: string;
+  };
 }
 
 const {
@@ -20,10 +24,10 @@ const {
   hideHeader = false,
   hideFooter = false,
   backLink,
+  nextLink,
 } = Astro.props;
 
 const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`;
-const pageTitle = title === 'René Galindo' ? undefined : title;
 ---
 
 <!doctype html>
@@ -99,11 +103,11 @@ const pageTitle = title === 'René Galindo' ? undefined : title;
   </head>
   <body class="bg-gray-50 text-gray-900 antialiased">
     <div class="min-h-screen flex flex-col">
-      <Header pageTitle={pageTitle} hidden={hideHeader} transition:persist />
+      <Header hidden={hideHeader} transition:persist />
       <main class="flex-1 w-full max-w-2xl mx-auto px-4 pt-4 sm:pt-6 pb-24 text-lg">
         <slot />
       </main>
-      {!hideFooter && <Footer backLink={backLink} transition:persist />}
+      {!hideFooter && <Footer backLink={backLink} nextLink={nextLink} transition:persist />}
     </div>
   </body>
 </html>

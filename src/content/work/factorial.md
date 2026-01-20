@@ -1,6 +1,6 @@
 ---
 title: "Factorial"
-description: "Led design system revamp."
+description: "Built and led design system teams"
 company: "Factorial"
 role: "Product Designer"
 year: "2024-2025"

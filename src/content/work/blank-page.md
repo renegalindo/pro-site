@@ -1,6 +1,6 @@
 ---
 title: "Blank Page"
-description: "The simplest way to write online."
+description: "The simplest way to write online"
 year: "Current"
 featured: false
 sideProject: true

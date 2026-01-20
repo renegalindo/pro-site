@@ -1,6 +1,6 @@
 ---
 title: "Lana"
-description: "Founding designer, from zero to one."
+description: "Founding designer, from zero to one"
 company: "Lana"
 role: "Co-founder, Head of Design"
 year: "2018-2021"
