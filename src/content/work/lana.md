@@ -6,6 +6,7 @@ role: "Co-founder, Head of Design"
 year: "2018-2021"
 featured: true
 order: 3
+color: "bg-purple-100"
 ---
 
 ## Overview

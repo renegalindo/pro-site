@@ -3,7 +3,8 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 const work = await getCollection('work');
-const sortedWork = work.sort((a, b) => a.data.order - b.data.order);
+const mainProjects = work.filter(p => !p.data.sideProject).sort((a, b) => a.data.order - b.data.order);
+const sideProjects = work.filter(p => p.data.sideProject).sort((a, b) => a.data.order - b.data.order);
 ---
 
 <BaseLayout title="Work" description="Selected work by René Galindo">
@@ -11,57 +12,57 @@ const sortedWork = work.sort((a, b) => a.data.order - b.data.order);
     This section can introduce visitors to your professional background and what they'll find in the projects below.
   </p>
   <div class="space-y-2">
-    {sortedWork.map((project, index) => {
-      const colors = ['bg-blue-100', 'bg-green-100', 'bg-purple-100', 'bg-rose-100', 'bg-orange-100'];
-      return (
-        <article class="flex gap-4 -mx-4 px-4 py-3 justify-between items-center">
-          <div class="space-y-0.5">
-            <div class="flex items-baseline gap-2">
-              <h2 class="font-medium text-gray-900">
-                <a
-                  href={`/work/${project.slug}`}
-                  class="no-underline hover:underline"
-                >
-                  {project.data.title}
-                </a>
-              </h2>
-              {project.data.year && (
-                <span class="text-gray-500">{project.data.year}</span>
-              )}
-            </div>
-            <p class="text-gray-700">
-              {project.data.description}
-            </p>
+    {mainProjects.map((project) => (
+      <article class="flex gap-4 -mx-4 px-4 py-3">
+        <div class={`w-14 h-14 rounded-xl shrink-0 -ml-px ${project.data.color || 'bg-gray-100'}`}></div>
+        <div class="space-y-1">
+          <div class="flex items-baseline gap-2">
+            <h2 class="font-medium text-gray-900">
+              <a
+                href={`/work/${project.slug}`}
+                class="no-underline hover:underline"
+              >
+                {project.data.title}
+              </a>
+            </h2>
+            {project.data.year && (
+              <span class="text-gray-400">{project.data.year}</span>
+            )}
           </div>
-          <div class={`w-14 h-14 rounded-xl shrink-0 ${colors[index % colors.length]}`}></div>
-        </article>
-      );
-    })}
+          <p class="text-gray-700">
+            {project.data.description}
+          </p>
+        </div>
+      </article>
+    ))}
   </div>
 
   <p class="text-gray-700 mt-12 mb-8">
     Side projects I've built over the years.
   </p>
   <div class="space-y-2">
-    <article class="flex gap-4 -mx-4 px-4 py-3 justify-between items-center">
-      <div class="space-y-0.5">
-        <div class="flex items-baseline gap-2">
-          <h2 class="font-medium text-gray-900">Emojinote</h2>
-          <span class="text-gray-500">2018-2019</span>
+    {sideProjects.map((project) => (
+      <article class="flex gap-4 -mx-4 px-4 py-3">
+        <div class={`w-14 h-14 rounded-xl shrink-0 -ml-px ${project.data.color || 'bg-gray-100'}`}></div>
+        <div class="space-y-1">
+          <div class="flex items-baseline gap-2">
+            <h2 class="font-medium text-gray-900">
+              <a
+                href={`/work/${project.slug}`}
+                class="no-underline hover:underline"
+              >
+                {project.data.title}
+              </a>
+            </h2>
+            {project.data.year && (
+              <span class="text-gray-400">{project.data.year}</span>
+            )}
+          </div>
+          <p class="text-gray-700">
+            {project.data.description}
+          </p>
         </div>
-        <p class="text-gray-700">Organize your notes with emoji. It's really that simple.</p>
-      </div>
-      <div class="w-14 h-14 rounded-xl shrink-0 bg-yellow-100"></div>
-    </article>
-    <article class="flex gap-4 -mx-4 px-4 py-3 justify-between items-center">
-      <div class="space-y-0.5">
-        <div class="flex items-baseline gap-2">
-          <h2 class="font-medium text-gray-900">Blank Page</h2>
-          <span class="text-gray-500">2020-Present</span>
-        </div>
-        <p class="text-gray-700">The simple writing app that's always in your browser.</p>
-      </div>
-      <div class="w-14 h-14 rounded-xl shrink-0 bg-teal-100"></div>
-    </article>
+      </article>
+    ))}
   </div>
 </BaseLayout>

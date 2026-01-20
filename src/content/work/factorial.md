@@ -6,6 +6,7 @@ role: "Product Designer"
 year: "2024-2025"
 featured: true
 order: 1
+color: "bg-blue-100"
 ---
 
 ## Overview

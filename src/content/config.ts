@@ -9,7 +9,9 @@ const work = defineCollection({
     role: z.string().optional(),
     year: z.string().optional(),
     featured: z.boolean().default(false),
+    sideProject: z.boolean().default(false),
     order: z.number().default(0),
+    color: z.string().optional(),
   }),
 });
 

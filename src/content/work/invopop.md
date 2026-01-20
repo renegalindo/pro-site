@@ -6,6 +6,7 @@ role: "Product Designer"
 year: "2021-2023"
 featured: true
 order: 2
+color: "bg-green-100"
 ---
 
 ## Overview
