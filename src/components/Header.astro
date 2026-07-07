@@ -17,70 +17,151 @@ const currentPath = Astro.url.pathname;
 // Helper to check if a link matches current path
 const isActive = (href: string) =>
   currentPath === href || (href !== '/' && currentPath.startsWith(href));
+
+// Label shown next to the avatar when the menu is collapsed.
+// About (/) intentionally shows no label.
+const activeLink = navLinks.find((link) => isActive(link.href));
+const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : null;
 ---
 
-<header class:list={[
+<header id="site-header" class:list={[
   "top-0 z-10 w-full bg-gray-50/70 backdrop-blur-md",
-  hidden ? "absolute opacity-0 pointer-events-none" : "sticky"
+  hidden ? "absolute opacity-0 pointer-events-none" : "fixed"
 ]}>
-  <div class="max-w-2xl mx-auto px-4 pt-12 pb-4">
-    <div class="flex items-center gap-6">
+  <div class="header-inner max-w-2xl mx-auto px-4">
+    <div class="flex items-center gap-4">
       <button id="header-menu-button" class="hover:text-gray-600 transition-colors" aria-label="Toggle menu">
         <img id="header-avatar" src="/avatar.png" alt="René Galindo" class="w-10 h-10 rounded-full transition-all duration-200 ease-in-out" />
       </button>
 
-      <nav id="header-dropdown" class="opacity-0 -translate-x-2 pointer-events-none transition-all duration-150 ease-out">
-        <ul class="flex items-center gap-6 text-xl">
-          {navLinks.map((link) => (
-            <li>
-              <a
-                href={link.href}
-                class:list={[
-                  'hover:text-gray-600 transition-colors',
-                  isActive(link.href) ? 'text-gray-900 font-medium' : 'text-gray-500',
-                ]}
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <div class="relative flex items-center">
+        {currentLabel && (
+          <span id="header-label" class="header-label cursor-pointer select-none text-xl font-medium text-gray-900 hover:text-gray-600">
+            {currentLabel}
+          </span>
+        )}
+
+        <nav id="header-dropdown" class="absolute left-0 top-1/2 -translate-y-1/2 opacity-0 -translate-x-2 pointer-events-none transition-all duration-150 ease-out">
+          <ul class="flex items-center gap-6 text-xl">
+            {navLinks.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class:list={[
+                    'hover:text-gray-600 transition-colors',
+                    isActive(link.href) ? 'text-gray-900 font-medium' : 'text-gray-500',
+                  ]}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
     </div>
   </div>
 </header>
 
+<style>
+  .header-label {
+    opacity: 1;
+    transition: opacity 0.2s ease-out, color 0.15s ease-out;
+  }
+
+  .header-label.menu-open {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Expanded (top of page) → compact (scrolled) header.
+     Expanded: 48 + 40 + 16 = 104px. Compact: 12 + 36 + 12 = 60px. */
+  .header-inner {
+    padding-top: 3rem;
+    padding-bottom: 1rem;
+    transition: padding 0.25s ease-out;
+  }
+
+  #site-header.scrolled .header-inner {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  #site-header.scrolled #header-avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+</style>
+
 <script>
+  let scrollHandler: (() => void) | null = null;
+
+  function setupHeaderScroll() {
+    const header = document.getElementById('site-header');
+    if (!header) return;
+
+    if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
+
+    let ticking = false;
+    const update = () => {
+      const y = window.scrollY;
+      // Latch: commit to compact as soon as we leave the top, and only
+      // return to the tall state once we're back at the very top. This
+      // deadband avoids flip-flopping (and mid-transition jitter) when
+      // scrollY hovers around a single threshold.
+      if (y > 40) {
+        header.classList.add('scrolled');
+      } else if (y < 28) {
+        header.classList.remove('scrolled');
+      }
+      ticking = false;
+    };
+
+    scrollHandler = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+    update();
+  }
+
   function setupHeader() {
+    setupHeaderScroll();
+
     const button = document.getElementById('header-menu-button');
     const dropdown = document.getElementById('header-dropdown');
     const avatar = document.getElementById('header-avatar');
+    const label = document.getElementById('header-label');
 
     if (!button || !dropdown || !avatar) return;
 
-    const closeDropdown = (keepPosition = false) => {
-      dropdown.classList.remove('opacity-100');
-      if (!keepPosition) {
-        dropdown.classList.remove('translate-x-0');
-        dropdown.classList.add('-translate-x-2');
-      }
-      dropdown.classList.add('opacity-0', 'pointer-events-none');
+    const closeDropdown = () => {
+      dropdown.classList.remove('opacity-100', 'translate-x-0');
+      dropdown.classList.add('opacity-0', '-translate-x-2', 'pointer-events-none');
       avatar.classList.remove('rotate-[20deg]');
+      label?.classList.remove('menu-open');
     };
 
     const openDropdown = () => {
       avatar.classList.add('rotate-[20deg]');
+      label?.classList.add('menu-open');
       setTimeout(() => {
         dropdown.classList.remove('opacity-0', '-translate-x-2', 'pointer-events-none');
         dropdown.classList.add('opacity-100', 'translate-x-0');
       }, 135);
     };
 
-    button.addEventListener('click', (e) => {
+    const toggleDropdown = (e: MouseEvent) => {
       e.stopPropagation();
       const isOpen = dropdown.classList.contains('opacity-100');
       isOpen ? closeDropdown() : openDropdown();
-    });
+    };
+
+    button.addEventListener('click', toggleDropdown);
+    label?.addEventListener('click', toggleDropdown);
 
     document.addEventListener('click', () => {
       if (dropdown.classList.contains('opacity-100')) {
@@ -91,7 +172,12 @@ const isActive = (href: string) =>
     dropdown.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
       if (target?.tagName === 'A') {
-        closeDropdown(true); // Keep position, just fade out
+        // Navigating away: fade the open menu out in its current position
+        // (no slide back) and keep the old label suppressed, so the incoming
+        // page's label fades in cleanly without overlap.
+        dropdown.classList.remove('opacity-100');
+        dropdown.classList.add('opacity-0', 'pointer-events-none');
+        avatar.classList.remove('rotate-[20deg]');
       }
     });
   }

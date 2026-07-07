@@ -10,7 +10,15 @@ const sideProjects = work.filter(p => p.data.sideProject).sort((a, b) => a.data.
 
 <BaseLayout title="Work" description="Design work by René Galindo" hideFooter>
 
-  <h2 class="mb-2 text-gray-500 text-base pb-1">Work</h2>
+  <div class="mb-8 space-y-4 text-gray-700 leading-relaxed">
+    <p>
+      A selection of product design work from the last decade — from early-stage startups to established companies.
+    </p>
+    <p>
+      Each project covers the problem, the approach, and what we shipped. More case studies coming soon.
+    </p>
+  </div>
+
   <div class="space-y-0">
     {mainProjects.map((project) => (
       <ProjectCard

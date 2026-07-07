@@ -103,8 +103,11 @@ const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`
   </head>
   <body class="bg-gray-50 text-gray-900 antialiased">
     <div class="min-h-screen flex flex-col">
-      <Header hidden={hideHeader} transition:persist />
-      <main class="flex-1 w-full max-w-2xl mx-auto px-4 pt-4 sm:pt-6 pb-24 text-lg">
+      <Header hidden={hideHeader} />
+      <main class:list={[
+        "flex-1 w-full max-w-2xl mx-auto px-4 pb-24 text-lg",
+        hideHeader ? "pt-4 sm:pt-6" : "pt-[120px] sm:pt-[128px]",
+      ]}>
         <slot />
       </main>
       {!hideFooter && <Footer backLink={backLink} nextLink={nextLink} transition:persist />}
