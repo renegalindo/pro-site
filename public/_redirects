@@ -1,0 +1,34 @@
+# Legacy Ghost blog URLs -> shuffle.renegalindo.com (301, permanent)
+# The blog moved off the apex on 2026-07-08. These rules preserve every
+# old inbound link and its SEO. Ghost's URL namespaces are date-prefixed
+# posts (2017-2026) plus /newsletter, /tag, /author, /rss, and a few pages
+# — none of which overlap the portfolio's routes (/, /work, /now, /stack,
+# /principles), so the portfolio is unaffected.
+
+# Dated posts (1,335 of them across ten years)
+/2017/*  https://shuffle.renegalindo.com/2017/:splat  301
+/2018/*  https://shuffle.renegalindo.com/2018/:splat  301
+/2019/*  https://shuffle.renegalindo.com/2019/:splat  301
+/2020/*  https://shuffle.renegalindo.com/2020/:splat  301
+/2021/*  https://shuffle.renegalindo.com/2021/:splat  301
+/2022/*  https://shuffle.renegalindo.com/2022/:splat  301
+/2023/*  https://shuffle.renegalindo.com/2023/:splat  301
+/2024/*  https://shuffle.renegalindo.com/2024/:splat  301
+/2025/*  https://shuffle.renegalindo.com/2025/:splat  301
+/2026/*  https://shuffle.renegalindo.com/2026/:splat  301
+
+# Newsletter archive (posts + index)
+/newsletter/*  https://shuffle.renegalindo.com/newsletter/:splat  301
+/newsletter     https://shuffle.renegalindo.com/newsletter/       301
+
+# Ghost taxonomy + feed
+/tag/*     https://shuffle.renegalindo.com/tag/:splat     301
+/author/*  https://shuffle.renegalindo.com/author/:splat  301
+/rss       https://shuffle.renegalindo.com/rss/           301
+/rss/*     https://shuffle.renegalindo.com/rss/:splat     301
+
+# Standalone blog pages
+/bootlegs  https://shuffle.renegalindo.com/bootlegs/  301
+/gracias   https://shuffle.renegalindo.com/gracias/   301
+# Remove the line below the day you add a portfolio /about page:
+/about     https://shuffle.renegalindo.com/about/     301
