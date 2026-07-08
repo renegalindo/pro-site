@@ -123,55 +123,40 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
 </style>
 
 <script>
-  let scrollHandler: (() => void) | null = null;
+  import { watchHeaderCollapse } from '@/scripts/headerScroll';
 
-  function setupHeaderScroll() {
-    const header = document.getElementById('site-header');
-    if (!header) return;
-
-    if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
-
-    let ticking = false;
-    const update = () => {
-      const y = window.scrollY;
-      // Latch: commit to compact as soon as we leave the top, and only
-      // return to the tall state once we're back at the very top. This
-      // deadband avoids flip-flopping (and mid-transition jitter) when
-      // scrollY hovers around a single threshold.
-      if (y > 44) {
-        header.classList.add('scrolled');
-      } else if (y < 36) {
-        header.classList.remove('scrolled');
-      }
-      ticking = false;
-    };
-
-    scrollHandler = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(update);
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', scrollHandler, { passive: true });
-    update();
-  }
+  // Reset per page-load so listeners on persistent targets (document, window)
+  // are torn down before we re-attach, instead of accumulating across soft
+  // navigations.
+  let controller: AbortController | null = null;
 
   function setupHeader() {
-    setupHeaderScroll();
+    controller?.abort();
+    controller = new AbortController();
+    const { signal } = controller;
 
+    const header = document.getElementById('site-header');
     const button = document.getElementById('header-menu-button');
     const dropdown = document.getElementById('header-dropdown');
     const avatar = document.getElementById('header-avatar');
     const label = document.getElementById('header-label');
 
-    if (!button || !dropdown || !avatar) return;
+    if (!header || !button || !dropdown || !avatar) return;
 
-    const closeDropdown = () => {
-      dropdown.classList.remove('opacity-100', 'translate-x-0');
-      dropdown.classList.add('opacity-0', '-translate-x-2', 'pointer-events-none');
+    watchHeaderCollapse(header, signal);
+
+    // Single source of truth for collapsing the dropdown. `slide` controls
+    // whether it eases back to the left (vs. fading in place); `restoreLabel`
+    // controls whether the section label reappears next to the avatar.
+    const collapseDropdown = ({ slide, restoreLabel }: { slide: boolean; restoreLabel: boolean }) => {
+      dropdown.classList.remove('opacity-100');
+      dropdown.classList.add('opacity-0', 'pointer-events-none');
+      if (slide) {
+        dropdown.classList.remove('translate-x-0');
+        dropdown.classList.add('-translate-x-2');
+      }
       avatar.classList.remove('rotate-[20deg]');
-      label?.classList.remove('menu-open');
+      if (restoreLabel) label?.classList.remove('menu-open');
       button.setAttribute('aria-expanded', 'false');
     };
 
@@ -185,31 +170,46 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
       }, 135);
     };
 
-    const toggleDropdown = (e: MouseEvent) => {
+    button.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = dropdown.classList.contains('opacity-100');
-      isOpen ? closeDropdown() : openDropdown();
-    };
-
-    button.addEventListener('click', toggleDropdown);
+      if (dropdown.classList.contains('opacity-100')) {
+        collapseDropdown({ slide: true, restoreLabel: true });
+      } else {
+        openDropdown();
+      }
+    }, { signal });
 
     document.addEventListener('click', () => {
       if (dropdown.classList.contains('opacity-100')) {
-        closeDropdown();
+        collapseDropdown({ slide: true, restoreLabel: true });
       }
-    });
+    }, { signal });
+
+    const isCurrentPage = (href: string) => {
+      const path = window.location.pathname;
+      if (href === '/') return path === '/';
+      return path === href || path.startsWith(`${href}/`);
+    };
 
     dropdown.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
-      if (target?.tagName === 'A') {
-        // Navigating to another page: fade out in place (no slide back).
-        // Keep the old label suppressed until the new page header mounts.
-        dropdown.classList.remove('opacity-100');
-        dropdown.classList.add('opacity-0', 'pointer-events-none');
-        avatar.classList.remove('rotate-[20deg]');
-        button.setAttribute('aria-expanded', 'false');
+      if (target?.tagName !== 'A') return;
+
+      const href = (target as HTMLAnchorElement).getAttribute('href');
+      if (!href) return;
+
+      // Clicking the current section: cancel navigation and fade closed in
+      // place, restoring the label.
+      if (isCurrentPage(href)) {
+        e.preventDefault();
+        collapseDropdown({ slide: false, restoreLabel: true });
+        return;
       }
-    });
+
+      // Navigating to another page: fade out in place (no slide back) and keep
+      // the old label suppressed until the new page header mounts.
+      collapseDropdown({ slide: false, restoreLabel: false });
+    }, { signal });
   }
 
   document.addEventListener('astro:page-load', setupHeader);

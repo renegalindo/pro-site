@@ -51,35 +51,21 @@ const { title, logo } = Astro.props;
 </style>
 
 <script>
-  let scrollHandler: (() => void) | null = null;
+  import { watchHeaderCollapse } from '@/scripts/headerScroll';
 
-  function setupPageHeaderScroll() {
+  // Reset per page-load so the window scroll listener is torn down (rather than
+  // accumulating) across soft navigations to and from work-detail pages.
+  let controller: AbortController | null = null;
+
+  function setupPageHeader() {
+    controller?.abort();
+    controller = new AbortController();
+
     const header = document.getElementById('page-header');
     if (!header) return;
 
-    if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
-
-    let ticking = false;
-    const update = () => {
-      const y = window.scrollY;
-      if (y > 44) {
-        header.classList.add('scrolled');
-      } else if (y < 36) {
-        header.classList.remove('scrolled');
-      }
-      ticking = false;
-    };
-
-    scrollHandler = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(update);
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', scrollHandler, { passive: true });
-    update();
+    watchHeaderCollapse(header, controller.signal);
   }
 
-  document.addEventListener('astro:page-load', setupPageHeaderScroll);
+  document.addEventListener('astro:page-load', setupPageHeader);
 </script>
