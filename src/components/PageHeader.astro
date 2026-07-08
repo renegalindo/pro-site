@@ -1,0 +1,85 @@
+---
+interface Props {
+  title: string;
+  logo?: string;
+}
+
+const { title, logo } = Astro.props;
+---
+
+<header id="page-header" class="top-0 z-10 w-full fixed bg-gray-50/70 backdrop-blur-md">
+  <div class="page-header-inner max-w-2xl mx-auto px-4">
+    <div class="flex items-center gap-4">
+      {logo && (
+        <img
+          id="page-header-logo"
+          src={logo}
+          alt=""
+          class="w-10 h-10 rounded-xl shrink-0 object-cover transition-all duration-200 ease-in-out"
+        />
+      )}
+      <h1 class="page-header-title text-2xl font-medium text-gray-900">{title}</h1>
+    </div>
+  </div>
+</header>
+
+<style>
+  .page-header-title {
+    transition: font-size 0.25s ease-out;
+  }
+
+  /* Expanded: 48 + 40 + 16 = 104px. Compact: 18 + 32 + 18 = 68px. */
+  .page-header-inner {
+    padding-top: 3rem;
+    padding-bottom: 1rem;
+    transition: padding 0.25s ease-out;
+  }
+
+  #page-header.scrolled .page-header-inner {
+    padding-top: 1.125rem;
+    padding-bottom: 1.125rem;
+  }
+
+  #page-header.scrolled .page-header-title {
+    font-size: 1.125rem;
+  }
+
+  #page-header.scrolled #page-header-logo {
+    width: 2rem;
+    height: 2rem;
+  }
+</style>
+
+<script>
+  let scrollHandler: (() => void) | null = null;
+
+  function setupPageHeaderScroll() {
+    const header = document.getElementById('page-header');
+    if (!header) return;
+
+    if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
+
+    let ticking = false;
+    const update = () => {
+      const y = window.scrollY;
+      if (y > 44) {
+        header.classList.add('scrolled');
+      } else if (y < 36) {
+        header.classList.remove('scrolled');
+      }
+      ticking = false;
+    };
+
+    scrollHandler = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+    update();
+  }
+
+  document.addEventListener('astro:page-load', setupPageHeaderScroll);
+</script>
