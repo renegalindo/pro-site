@@ -1,5 +1,9 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPostCount } from '@/lib/ghost';
+
+const postCount = await getPostCount();
+const postCountLabel = postCount.toLocaleString('en-US');
 ---
 
 <BaseLayout title="René Galindo" hideFooter>
@@ -17,7 +21,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
     </p>
 
     <p>
-      I've been writing on the internet since 2016. Subscribe to my <a href="https://encontrandoelformato.substack.com/" target="_blank" rel="noopener noreferrer">newsletter</a>, or <a href="http://shuffle.renegalindo.com/" target="_blank" rel="noopener noreferrer">shuffle</a> through the 1,556 posts.
+      I've been writing on the internet since 2016. Subscribe to my <a href="https://encontrandoelformato.substack.com/" target="_blank" rel="noopener noreferrer">newsletter</a>, or <a href="http://shuffle.renegalindo.com/" target="_blank" rel="noopener noreferrer">shuffle</a> through the {postCountLabel} posts.
     </p>
 
     <p>
