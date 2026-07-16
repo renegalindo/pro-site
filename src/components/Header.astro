@@ -33,7 +33,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
       <button
         id="header-menu-button"
         type="button"
-        class="header-trigger group flex items-center gap-3.5 text-gray-900 transition-colors hover:text-gray-700"
+        class="header-trigger group flex items-center text-gray-900 transition-colors hover:text-gray-700"
         aria-label={currentLabel ? `Open menu, current section ${currentLabel}` : 'Open menu'}
         aria-expanded="false"
         aria-controls="header-dropdown"
@@ -65,7 +65,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
         id="header-dropdown"
         class="header-dropdown absolute top-1/2 -translate-y-1/2 opacity-0 -translate-x-2 pointer-events-none transition-all duration-150 ease-out"
       >
-        <ul class="flex items-center gap-6 text-xl">
+        <ul class="flex items-center gap-5 text-xl">
           {navLinks.map((link) => (
             <li>
               <a
@@ -100,6 +100,10 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
     margin-left: 2px;
   }
 
+  .header-trigger {
+    gap: calc(1rem - var(--t) * 0.125rem);
+  }
+
   .header-label {
     font-size: calc(1.25rem - var(--t) * 0.125rem);
     opacity: 1;
@@ -113,7 +117,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
 
   /* Align dropdown with the avatar column (avatar width + gap). */
   .header-dropdown {
-    left: calc(2.875rem - var(--t) * 0.5rem);
+    left: calc(3rem - var(--t) * 0.625rem);
     transition: opacity 0.15s ease-out, transform 0.15s ease-out;
   }
 

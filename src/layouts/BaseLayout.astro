@@ -19,6 +19,7 @@ interface Props {
     href: string;
     label: string;
   };
+  footerText?: string;
 }
 
 const {
@@ -30,12 +31,17 @@ const {
   hideFooter = false,
   backLink,
   nextLink,
+  footerText,
 } = Astro.props;
 
 const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`;
 const showNavHeader = !hideHeader && !pageTitle;
 const showPageHeader = !!pageTitle;
-const hasFixedHeader = showNavHeader || showPageHeader;
+const contentTopPadding = showPageHeader
+  ? 'pt-[120px] sm:pt-[128px]'
+  : showNavHeader
+    ? 'pt-[112px] sm:pt-[120px]'
+    : 'pt-4 sm:pt-6';
 ---
 
 <!doctype html>
@@ -142,7 +148,7 @@ const hasFixedHeader = showNavHeader || showPageHeader;
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <ViewTransitions />
@@ -152,12 +158,14 @@ const hasFixedHeader = showNavHeader || showPageHeader;
       <Header hidden={!showNavHeader} />
       {showPageHeader && <PageHeader title={pageTitle!} logo={pageLogo} />}
       <main class:list={[
-        "flex-1 w-full max-w-2xl mx-auto px-4 pb-24 text-[17.5px]",
-        hasFixedHeader ? "pt-[120px] sm:pt-[128px]" : "pt-4 sm:pt-6",
+        "flex-1 w-full max-w-2xl mx-auto px-4 pb-24 text-[17px]",
+        contentTopPadding,
       ]}>
         <slot />
       </main>
-      {!hideFooter && <Footer backLink={backLink} nextLink={nextLink} transition:persist />}
+      {!hideFooter && (
+        <Footer backLink={backLink} nextLink={nextLink} text={footerText} transition:persist />
+      )}
     </div>
 
     <script>
