@@ -16,4 +16,12 @@ const work = defineCollection({
   }),
 });
 
-export const collections = { work };
+const now = defineCollection({
+  type: 'content',
+  schema: z.object({
+    date: z.coerce.date(),
+    location: z.string(),
+  }),
+});
+
+export const collections = { work, now };

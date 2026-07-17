@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SnapshotEntry from '@/components/SnapshotEntry.astro';
+import { getNowSnapshots, snapshotMenu, snapshotLabel, type SnapshotLink } from '@/lib/snapshots';
+
+export async function getStaticPaths() {
+  const snapshots = await getNowSnapshots();
+  const menu = snapshotMenu(snapshots, '/now');
+
+  return snapshots.slice(1).map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry, menu },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'now'>;
+  menu: SnapshotLink[];
+}
+
+const { entry, menu } = Astro.props;
+const label = snapshotLabel(entry.data.date);
+---
+
+<BaseLayout
+  title={`Now · ${label}`}
+  description={`What René Galindo was up to in ${label}`}
+  snapshots={menu}
+  currentSnapshot={entry.slug}
+>
+  <SnapshotEntry entry={entry} />
+</BaseLayout>

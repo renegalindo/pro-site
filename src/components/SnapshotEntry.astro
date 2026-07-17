@@ -1,0 +1,38 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { snapshotDateline } from '@/lib/snapshots';
+
+interface Props {
+  entry: CollectionEntry<'now'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+const dateline = snapshotDateline(entry.data.date, entry.data.location);
+---
+
+<div class="space-y-6 text-gray-700 leading-relaxed">
+  <p>{dateline}</p>
+  <div class="snapshot-prose">
+    <Content />
+  </div>
+</div>
+
+<style>
+  .snapshot-prose :global(p) {
+    margin-top: 1.5rem;
+  }
+  .snapshot-prose :global(p:first-child) {
+    margin-top: 0;
+  }
+  .snapshot-prose :global(ul) {
+    list-style-type: disc;
+    padding-left: 1.25rem;
+  }
+  .snapshot-prose :global(li) {
+    margin-top: 0.5rem;
+  }
+  .snapshot-prose :global(li:first-child) {
+    margin-top: 0;
+  }
+</style>
