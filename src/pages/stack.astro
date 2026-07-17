@@ -6,7 +6,7 @@ const sections = [
     title: 'Design / Code',
     items: [
       {
-        name: 'Claude Code',
+        name: 'Claude',
         description: 'Workhorse of choice for building anything',
         href: 'https://www.anthropic.com/product/claude-code',
         icon: '/app-icons/claude-code.jpg',
@@ -31,7 +31,7 @@ const sections = [
       },
       {
         name: 'Balsamiq',
-        description: 'Super low-fidelity wireframe (guilty pleasure)',
+        description: 'Low-fidelity wireframes (guilty pleasure)',
         href: 'https://balsamiq.com/',
         icon: '/app-icons/balsamiq.png',
       },
@@ -42,43 +42,43 @@ const sections = [
     items: [
       {
         name: 'Blank Page',
-        description: 'The simplest way to write online',
+        description: 'Where every first draft starts',
         href: 'https://blank.page/',
         icon: '/app-icons/blank-page.png',
       },
       {
         name: 'Fantastical',
-        description: 'Beautiful calendar and scheduling',
+        description: 'Calendar and scheduling, everywhere',
         href: 'https://flexibits.com/fantastical',
         icon: '/app-icons/fantastical.jpg',
       },
       {
         name: 'Notion',
-        description: 'Notes, docs',
+        description: 'Mostly databases and kanban boards',
         href: 'https://www.notion.com/product',
         icon: '/app-icons/notion.png',
       },
       {
         name: 'Raycast',
-        description: 'Launcher',
+        description: 'Emoji picker that also launches apps',
         href: 'https://www.raycast.com/',
         icon: '/app-icons/raycast.png',
       },
       {
         name: 'Simplify',
-        description: 'A cleaner Gmail experience',
+        description: 'Makes Gmail surprisingly clean',
         href: 'https://simpl.fyi/',
         icon: '/app-icons/simplify-gmail.png',
       },
       {
         name: 'Supercut',
-        description: 'Video messaging for async work',
+        description: 'Recording bugs and quick demos',
         href: 'https://supercut.ai/',
         icon: '/app-icons/supercut.png',
       },
       {
         name: 'Things',
-        description: 'Task management',
+        description: 'Timeless task management',
         href: 'https://culturedcode.com/things/',
         icon: '/app-icons/things.jpg',
       },
@@ -90,39 +90,41 @@ const sections = [
 <BaseLayout
   title="Stack"
   description="Tools and software I use"
-  footerText="Updated: July 16, 2026"
+  footerText="Updated: July 2026"
 >
   <div class="space-y-8">
     <p class="text-gray-700">
-      Inspired by Brian Lovin's <a href="https://brianlovin.com/stack">stack</a>, here's my shortlist of the apps I use daily.
+      Inspired by Brian Lovin's <a href="https://brianlovin.com/stack">stack</a>, here's my shortlist of the apps I use daily:
     </p>
 
     {sections.map((section) => (
       <section>
         <h2 class="mt-8 mb-2 text-gray-500 text-base pb-1">{section.title}</h2>
-        <ul class="space-y-[10px] text-gray-700">
+        <ul class="space-y-3 text-gray-700 sm:space-y-2">
           {section.items.map((item) => (
-            <li class="flex items-start">
+            <li>
               <a
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="group inline-flex items-center gap-2 no-underline"
+                class="group flex items-start gap-2 no-underline"
               >
                 <img
                   src={item.icon}
                   alt=""
-                  width="24"
-                  height="24"
-                  class="h-6 w-6 shrink-0 rounded-md transition-shadow duration-150 ease-out group-hover:shadow-[0_2px_6px_rgba(17,24,39,0.14)]"
+                  width="20"
+                  height="20"
+                  class="mt-0.5 h-5 w-5 shrink-0 rounded shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_1px_1px_rgba(17,24,39,0.05)] transition-shadow duration-150 ease-out group-hover:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)]"
                   decoding="async"
                   loading="lazy"
                 />
-                <span class="font-medium text-gray-900 transition-colors group-hover:text-gray-600">
-                  {item.name}
+                <span class="flex min-w-0 flex-col items-start sm:flex-row sm:items-baseline sm:gap-2.5">
+                  <span class="whitespace-nowrap font-medium text-gray-900 transition-colors group-hover:text-gray-600">
+                    {item.name}
+                  </span>
+                  <span class="text-gray-700">{item.description}</span>
                 </span>
               </a>
-              <span class="ml-1 min-w-0 text-gray-700">{item.description}</span>
             </li>
           ))}
         </ul>
