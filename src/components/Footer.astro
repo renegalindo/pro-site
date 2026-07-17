@@ -21,19 +21,19 @@ const { backLink, nextLink, text } = Astro.props;
     <div class="flex items-center justify-between text-sm text-gray-500">
       <div>
         {backLink ? (
-          <a href={backLink.href} class="flex items-center gap-1.5 hover:text-gray-900 transition-colors">
+          <a href={backLink.href} class="flex items-center gap-1.5 hover:text-gray-600 transition-colors">
             <ArrowLeft size={16} />
             {backLink.label}
           </a>
         ) : text}
       </div>
       {nextLink ? (
-        <a href={nextLink.href} class="flex items-center gap-1.5 hover:text-gray-900 transition-colors">
+        <a href={nextLink.href} class="flex items-center gap-1.5 hover:text-gray-600 transition-colors">
           {nextLink.label}
           <ArrowRight size={16} />
         </a>
       ) : !text && (
-        <a href="mailto:hello@renegalindo.com" class="hover:text-gray-900 transition-colors">
+        <a href="mailto:hello@renegalindo.com" class="hover:text-gray-600 transition-colors">
           Say hello 👋
         </a>
       )}

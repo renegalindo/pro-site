@@ -33,14 +33,14 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
       <button
         id="header-menu-button"
         type="button"
-        class="header-trigger group flex items-center text-gray-900 transition-colors hover:text-gray-700"
+        class="header-trigger flex items-center text-gray-900"
         aria-label={currentLabel ? `Open menu, current section ${currentLabel}` : 'Open menu'}
         aria-expanded="false"
         aria-controls="header-dropdown"
       >
         <svg
           id="header-avatar"
-          class="shrink-0"
+          class="shrink-0 hover:scale-[1.04]"
           viewBox="0 0 185 210"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +71,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
               <a
                 href={link.href}
                 class:list={[
-                  'hover:text-gray-700 transition-colors',
+                  'hover:text-gray-600 transition-colors',
                   isActive(link.href) ? 'text-gray-900 font-medium' : 'text-gray-500',
                 ]}
               >
@@ -137,11 +137,6 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
     height: calc(2rem - var(--t) * 0.5rem);
     /* transform transition is for the menu-open rotate, not the scrub. */
     transition: transform 0.2s ease-out;
-  }
-
-  /* Keep the avatar ink in sync with the label's hover color transition. */
-  #header-avatar path {
-    transition: fill 0.15s ease;
   }
 </style>
 

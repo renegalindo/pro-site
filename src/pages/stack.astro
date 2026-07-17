@@ -44,11 +44,11 @@ const sections = [
         name: 'Blank Page',
         description: 'Where every first draft starts',
         href: 'https://blank.page/',
-        icon: '/app-icons/blank-page.png',
+        icon: '/app-icons/blank-page.svg',
       },
       {
         name: 'Fantastical',
-        description: 'Calendar and scheduling, everywhere',
+        description: 'Calendar and scheduling, everywhere I go',
         href: 'https://flexibits.com/fantastical',
         icon: '/app-icons/fantastical.jpg',
       },
@@ -99,32 +99,32 @@ const sections = [
 
     {sections.map((section) => (
       <section>
-        <h2 class="mt-8 mb-2 text-gray-500 text-base pb-1">{section.title}</h2>
-        <ul class="space-y-3 text-gray-700 sm:space-y-2">
+        <h2 class="mt-8 mb-2 pb-1 text-base text-gray-500">
+          {section.title}
+        </h2>
+        <ul class="flex flex-col gap-4 text-gray-700 sm:gap-2.5">
           {section.items.map((item) => (
-            <li>
+            <li class="relative pl-7 sm:flex sm:items-baseline">
               <a
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="group flex items-start gap-2 no-underline"
+                class="group block w-fit rounded-sm no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300 sm:w-28 sm:shrink-0"
               >
                 <img
                   src={item.icon}
                   alt=""
                   width="20"
                   height="20"
-                  class="mt-0.5 h-5 w-5 shrink-0 rounded shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_1px_1px_rgba(17,24,39,0.05)] transition-shadow duration-150 ease-out group-hover:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)]"
+                  class="absolute left-0 top-0.5 h-5 w-5 rounded shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_1px_1px_rgba(17,24,39,0.05)] transition-shadow duration-150 ease-out group-hover:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)] group-focus-visible:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)]"
                   decoding="async"
                   loading="lazy"
                 />
-                <span class="flex min-w-0 flex-col items-start sm:flex-row sm:items-baseline sm:gap-2.5">
-                  <span class="whitespace-nowrap font-medium text-gray-900 transition-colors group-hover:text-gray-600">
-                    {item.name}
-                  </span>
-                  <span class="text-gray-700">{item.description}</span>
+                <span class="whitespace-nowrap font-medium text-gray-900 transition-colors group-hover:text-gray-600">
+                  {item.name}
                 </span>
               </a>
+              <span class="block text-gray-700 sm:ml-8">{item.description}</span>
             </li>
           ))}
         </ul>
