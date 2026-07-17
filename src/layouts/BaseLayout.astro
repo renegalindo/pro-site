@@ -117,17 +117,16 @@ const contentTopPadding = showPageHeader
         content: '';
         transform: translate(-50%, -50%);
       }
-      /* Animated accent used for links to the short-form blog. */
+      /* Avoid background-clip at rest — it tints glyphs vs body text. */
       .rainbow-link {
+        transition: color 0.15s ease, text-decoration-color 0.15s ease;
+      }
+      .rainbow-link:hover,
+      .rainbow-link:focus-visible {
         background-image: linear-gradient(90deg, hsl(345 98% 60%), hsl(38 100% 50%), hsl(160 95% 39%), hsl(200 100% 39%), hsl(263 84% 50%), hsl(345 98% 60%));
         background-size: 200% 100%;
         background-clip: text;
         -webkit-background-clip: text;
-        -webkit-text-fill-color: currentColor;
-        transition: color 0.15s ease, -webkit-text-fill-color 0.15s ease, text-decoration-color 0.15s ease;
-      }
-      .rainbow-link:hover,
-      .rainbow-link:focus-visible {
         color: transparent;
         -webkit-text-fill-color: transparent;
         text-decoration-color: transparent;
