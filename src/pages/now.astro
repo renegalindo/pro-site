@@ -2,40 +2,51 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Now" description="What René Galindo is doing now" hideFooter>
+<BaseLayout
+  title="Now"
+  description="What René Galindo is doing now"
+  footerText="Updated: July 2026"
+>
   <div class="space-y-6 text-gray-700 leading-relaxed">
-    <p class="text-gray-700">
-      What I'm focused on right now.
+    <p>
+      Updated July 17, 2026 from Mexico City.
     </p>
-    <section>
-      <h2 class="font-medium text-gray-900 mb-2">Work</h2>
-      <p>
-        Leading product design at Blank Page<br />
-        Building design systems and processes for clients<br />
-        Mentoring junior designers
-      </p>
-    </section>
 
-    <section>
-      <h2 class="font-medium text-gray-900 mb-2">Learning</h2>
-      <p>
-        Exploring AI-assisted design workflows<br />
-        Studying design systems at scale<br />
-        Reading about product strategy
-      </p>
-    </section>
-
-    <section>
-      <h2 class="font-medium text-gray-900 mb-2">Life</h2>
-      <p>
-        Based in Mexico City<br />
-        Enjoying local coffee shops<br />
-        Planning weekend trips
-      </p>
-    </section>
-
-    <p class="text-sm text-gray-500">
-      Last updated: January 2026
-    </p>
+    <ul class="list-disc space-y-2 pl-5">
+      <li>
+        Running away from Barcelona's <a
+          href="https://www.elperiodico.com/es/sociedad/20260708/barcelona-record-absoluto-temperatura-40-grados-miercoles-calor-132256633"
+          target="_blank"
+          rel="noopener noreferrer"
+        >record-breaking</a> heat. Staying in an Airbnb in CDMX.
+        Enjoying the rain every afternoon - feels like a climate shelter here.
+      </li>
+      <li>
+        Taking a break after an intense 0 to 1 project with <a
+          href="https://getaxyom.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Axyom</a>. Focusing on
+        adding table-stakes features to <a
+          href="https://blank.page/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >blank.page</a>
+        such as projects (aka folders), typeface options, and more.
+      </li>
+      <li>
+        Also working on my new personal/professional site (this site!). I moved my
+        short-form blog (in Spanish) over to <a
+          class="rainbow-link"
+          href="https://shuffle.renegalindo.com"
+          target="_blank"
+          rel="noopener noreferrer"
+        >shuffle.renegalindo.com</a>.
+      </li>
+      <li>
+        Eating multiple mangos a day - likely what I miss the most about living
+        here.
+      </li>
+    </ul>
   </div>
 </BaseLayout>

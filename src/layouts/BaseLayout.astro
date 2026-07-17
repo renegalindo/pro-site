@@ -91,12 +91,56 @@ const contentTopPadding = showPageHeader
         transition: color 0.15s ease, text-decoration-color 0.15s ease;
       }
       main a:hover {
-        color: #4b5563;
-        text-decoration-color: #4b5563;
+        color: #6b7280;
+        text-decoration-color: #6b7280;
       }
       main a:active {
-        color: #4b5563;
-        text-decoration-color: #4b5563;
+        color: #6b7280;
+        text-decoration-color: #6b7280;
+      }
+      /* Shared expanded hit area for compact links and controls. */
+      .hit-target {
+        position: relative;
+      }
+      .hit-target::after {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        min-width: 44px;
+        height: 44px;
+        content: '';
+        transform: translate(-50%, -50%);
+      }
+      /* Animated accent used for links to the short-form blog. */
+      .rainbow-link {
+        background-image: linear-gradient(90deg, hsl(345 98% 60%), hsl(38 100% 50%), hsl(160 95% 39%), hsl(200 100% 39%), hsl(263 84% 50%), hsl(345 98% 60%));
+        background-size: 200% 100%;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: currentColor;
+        transition: color 0.15s ease, -webkit-text-fill-color 0.15s ease, text-decoration-color 0.15s ease;
+      }
+      .rainbow-link:hover,
+      .rainbow-link:focus-visible {
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+        text-decoration-color: transparent;
+        animation: rainbow-pan 3.5s linear infinite;
+      }
+      @keyframes rainbow-pan {
+        to {
+          background-position: 200% 50%;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .rainbow-link {
+          transition: none;
+        }
+        .rainbow-link:hover,
+        .rainbow-link:focus-visible {
+          animation: none;
+        }
       }
       /* Instant page transitions */
       ::view-transition-old(root),

@@ -33,7 +33,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
       <button
         id="header-menu-button"
         type="button"
-        class="header-trigger flex items-center text-gray-900"
+        class="header-trigger hit-target flex items-center text-gray-900"
         aria-label={currentLabel ? `Open menu, current section ${currentLabel}` : 'Open menu'}
         aria-expanded="false"
         aria-controls="header-dropdown"
@@ -64,6 +64,8 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
       <nav
         id="header-dropdown"
         class="header-dropdown absolute top-1/2 -translate-y-1/2 opacity-0 -translate-x-2 pointer-events-none transition-all duration-150 ease-out"
+        aria-hidden="true"
+        inert
       >
         <ul class="flex items-center gap-5 text-xl">
           {navLinks.map((link) => (
@@ -71,7 +73,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
               <a
                 href={link.href}
                 class:list={[
-                  'hover:text-gray-600 transition-colors',
+                  'hit-target hover:text-gray-600 transition-colors',
                   isActive(link.href) ? 'text-gray-900 font-medium' : 'text-gray-500',
                 ]}
               >
@@ -133,6 +135,10 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
   }
 
   #header-avatar {
+    /* Lift above the trigger's 44px hit-area pseudo-element so the avatar still
+       receives hover directly (the overlay would otherwise swallow it). */
+    position: relative;
+    z-index: 1;
     width: calc(2rem - var(--t) * 0.5rem);
     height: calc(2rem - var(--t) * 0.5rem);
     /* transform transition is for the menu-open rotate, not the scrub. */
@@ -162,13 +168,26 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
     if (!header || !button || !dropdown || !avatar) return;
 
     watchHeaderCollapse(header, signal);
+    let openTimer: number | undefined;
+
+    const clearOpenTimer = () => {
+      if (openTimer !== undefined) {
+        window.clearTimeout(openTimer);
+        openTimer = undefined;
+      }
+    };
+
+    signal.addEventListener('abort', clearOpenTimer, { once: true });
 
     // Single source of truth for collapsing the dropdown. `slide` controls
     // whether it eases back to the left (vs. fading in place); `restoreLabel`
     // controls whether the section label reappears next to the avatar.
     const collapseDropdown = ({ slide, restoreLabel }: { slide: boolean; restoreLabel: boolean }) => {
+      clearOpenTimer();
       dropdown.classList.remove('opacity-100');
       dropdown.classList.add('opacity-0', 'pointer-events-none');
+      dropdown.setAttribute('aria-hidden', 'true');
+      dropdown.toggleAttribute('inert', true);
       if (slide) {
         dropdown.classList.remove('translate-x-0');
         dropdown.classList.add('-translate-x-2');
@@ -182,9 +201,12 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
       avatar.classList.add('rotate-[20deg]');
       label?.classList.add('menu-open');
       button.setAttribute('aria-expanded', 'true');
-      setTimeout(() => {
+      dropdown.setAttribute('aria-hidden', 'false');
+      dropdown.toggleAttribute('inert', false);
+      openTimer = window.setTimeout(() => {
         dropdown.classList.remove('opacity-0', '-translate-x-2', 'pointer-events-none');
         dropdown.classList.add('opacity-100', 'translate-x-0');
+        openTimer = undefined;
       }, 135);
     };
 
@@ -198,7 +220,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
 
     button.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (dropdown.classList.contains('opacity-100')) {
+      if (button.getAttribute('aria-expanded') === 'true') {
         closeMenu();
       } else {
         openDropdown();
@@ -206,9 +228,17 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
     }, { signal });
 
     document.addEventListener('click', () => {
-      if (dropdown.classList.contains('opacity-100')) {
+      if (button.getAttribute('aria-expanded') === 'true') {
         closeMenu();
       }
+    }, { signal });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || button.getAttribute('aria-expanded') !== 'true') return;
+
+      e.preventDefault();
+      closeMenu();
+      button.focus();
     }, { signal });
 
     const isCurrentPage = (href: string) => {
@@ -229,6 +259,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
       if (isCurrentPage(href)) {
         e.preventDefault();
         collapseDropdown({ slide: false, restoreLabel: true });
+        button.focus();
         return;
       }
 
