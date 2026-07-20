@@ -1,0 +1,298 @@
+---
+import type { RailItem } from '@/lib/rail';
+
+interface Props {
+  /** Small heading shown atop the expanded panel, e.g. "Contents". */
+  heading?: string;
+  items: RailItem[];
+}
+
+const { heading = 'Contents', items } = Astro.props;
+
+// A single item is nothing to navigate — hide the rail entirely.
+const show = items.length >= 2;
+---
+
+{show && (
+  <nav class="rail" id="section-rail" aria-label={heading}>
+    <button
+      type="button"
+      class="rail-trigger"
+      id="rail-trigger"
+      aria-expanded="false"
+      aria-controls="rail-panel"
+      aria-label={heading}
+    >
+      <span class="rail-ticks" aria-hidden="true">
+        {items.map((item) => (
+          <span
+            class:list={['rail-tick', { 'rail-tick--active': item.current }]}
+            data-target={item.href}
+          />
+        ))}
+      </span>
+    </button>
+
+    <div class="rail-panel" id="rail-panel">
+      <div class="rail-card">
+        <ul class="rail-list">
+        {items.map((item) => {
+          // The current entry renders as an inert <span>; the rest as links.
+          const Tag = item.current ? 'span' : 'a';
+          return (
+            <li>
+              <Tag
+                class:list={['rail-item', { 'rail-item--current': item.current }]}
+                href={item.current ? undefined : item.href}
+                aria-current={item.current ? 'true' : undefined}
+                data-target={item.href}
+                style={item.depth ? `--rail-depth: ${item.depth}` : undefined}
+              >
+                {item.depth ? <span class="rail-arrow" aria-hidden="true">→</span> : null}
+                <span class="rail-label">{item.label}</span>
+              </Tag>
+            </li>
+          );
+        })}
+        </ul>
+      </div>
+    </div>
+  </nav>
+)}
+
+<style>
+  .rail {
+    position: fixed;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+  }
+
+  .rail-trigger {
+    display: block;
+    /* Roomy left padding gives a comfortable hover approach from the content. */
+    padding: 0.5rem 0.125rem 0.5rem 1.25rem;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .rail-ticks {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4375rem;
+    padding: 0.4375rem 0.375rem;
+    border-radius: 0.5rem;
+    transition: background 0.15s ease;
+  }
+
+  .rail:hover .rail-ticks,
+  .rail:focus-within .rail-ticks {
+    background: rgba(17, 24, 39, 0.04);
+  }
+
+  .rail-trigger:active .rail-ticks {
+    background: rgba(17, 24, 39, 0.08);
+  }
+
+  .rail-tick {
+    width: 1rem;
+    height: 2px;
+    border-radius: 9999px;
+    background: #d1d5db;
+    transition: width 0.15s ease, background 0.15s ease;
+  }
+
+  .rail-tick--active {
+    width: 1.25rem;
+    background: #6b7280;
+  }
+
+  /* Sits flush against the rail (right: 100%) so there is no unhoverable dead
+     zone between the two. The visual gap is transparent padding, which still
+     hit-tests, so the cursor never leaves the menu on its way over. */
+  .rail-panel {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    padding-right: 0.25rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-50%) translateX(4px);
+    transform-origin: right center;
+    pointer-events: none;
+    /* Delay visibility until the fade-out finishes so links stay untabbable
+       while hidden, then flip instantly on open. */
+    transition: opacity 0.15s ease-out, transform 0.15s ease-out, visibility 0s linear 0.15s;
+  }
+
+  .rail:hover .rail-panel,
+  .rail:focus-within .rail-panel,
+  .rail[data-open] .rail-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
+    pointer-events: auto;
+    transition: opacity 0.15s ease-out, transform 0.15s ease-out, visibility 0s;
+  }
+
+  .rail-card {
+    min-width: 12rem;
+    max-width: 16rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    box-shadow:
+      0 0 0 1px rgba(10, 10, 10, 0.05),
+      0 8px 24px -6px rgba(0, 0, 0, 0.12),
+      0 2px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .rail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .rail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.5rem;
+    padding-left: calc(0.5rem + var(--rail-depth, 0) * 0.75rem);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #6b7280;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .rail-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  a.rail-item:hover,
+  a.rail-item:focus-visible {
+    outline: none;
+    background: #f5f5f5;
+    color: #0a0a0a;
+  }
+
+  /* Current state is carried by text colour alone — the background is reserved
+     for hover, so "where I am" never looks identical to "what I'm pointing at". */
+  .rail-item--current,
+  .rail-item--reading {
+    color: #0a0a0a;
+  }
+
+  .rail-arrow {
+    flex-shrink: 0;
+    color: #9ca3af;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rail-tick,
+    .rail-ticks,
+    .rail-panel {
+      transition: none;
+    }
+    .rail:hover .rail-panel,
+    .rail:focus-within .rail-panel,
+    .rail[data-open] .rail-panel {
+      transform: translateY(-50%);
+    }
+  }
+</style>
+
+<script>
+  // Reset per page-load so listeners tear down before we re-attach, instead of
+  // accumulating across soft navigations.
+  let controller: AbortController | null = null;
+
+  function setupRail() {
+    controller?.abort();
+    controller = new AbortController();
+    const { signal } = controller;
+
+    const rail = document.getElementById('section-rail');
+    const trigger = document.getElementById('rail-trigger');
+    const panel = document.getElementById('rail-panel');
+    if (!rail || !trigger || !panel) return;
+
+    const open = () => {
+      rail.setAttribute('data-open', '');
+      trigger.setAttribute('aria-expanded', 'true');
+    };
+    const close = () => {
+      rail.removeAttribute('data-open');
+      trigger.setAttribute('aria-expanded', 'false');
+    };
+
+    // Tap-to-expand (touch) and keyboard toggle. Hover is handled in CSS.
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      rail.hasAttribute('data-open') ? close() : open();
+    }, { signal });
+
+    document.addEventListener('click', () => {
+      if (rail.hasAttribute('data-open')) close();
+    }, { signal });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || !rail.hasAttribute('data-open')) return;
+      e.preventDefault();
+      close();
+      trigger.focus();
+    }, { signal });
+
+    // In-document mode: if items point at page anchors, smooth-scroll on click
+    // and track the section in view. (Cross-page items like /now are untouched.)
+    const anchorItems = Array.from(
+      panel.querySelectorAll<HTMLElement>('[data-target^="#"]'),
+    );
+    if (!anchorItems.length) return;
+
+    const ticks = Array.from(rail.querySelectorAll<HTMLElement>('.rail-tick'));
+    const setActive = (href: string) => {
+      for (const el of anchorItems) {
+        el.classList.toggle('rail-item--reading', el.dataset.target === href);
+      }
+      for (const tick of ticks) {
+        tick.classList.toggle('rail-tick--active', tick.dataset.target === href);
+      }
+    };
+
+    for (const item of anchorItems) {
+      item.addEventListener('click', (e) => {
+        const target = document.querySelector(item.dataset.target!);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        close();
+      }, { signal });
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActive(`#${entry.target.id}`);
+        }
+      },
+      { rootMargin: '0px 0px -70% 0px' },
+    );
+    for (const item of anchorItems) {
+      const target = document.querySelector(item.dataset.target!);
+      if (target) observer.observe(target);
+    }
+    signal.addEventListener('abort', () => observer.disconnect());
+  }
+
+  document.addEventListener('astro:page-load', setupRail);
+</script>

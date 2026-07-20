@@ -18,10 +18,13 @@ const work = defineCollection({
 
 const now = defineCollection({
   type: 'content',
-  schema: z.object({
-    date: z.coerce.date(),
-    location: z.string(),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      date: z.coerce.date(),
+      location: z.string(),
+      image: image().optional(),
+      imageAlt: z.string().optional(),
+    }),
 });
 
 export const collections = { work, now };

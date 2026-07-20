@@ -1,6 +1,5 @@
 ---
-import { ArrowLeft, ArrowRight, ChevronDown, Check } from 'lucide-astro';
-import type { SnapshotLink } from '@/lib/snapshots';
+import { ArrowLeft, ArrowRight } from 'lucide-astro';
 
 interface Props {
   backLink?: {
@@ -11,80 +10,28 @@ interface Props {
     href: string;
     label: string;
   };
-  text?: string;
-  snapshots?: SnapshotLink[];
-  currentSnapshot?: string;
 }
 
-const { backLink, nextLink, text, snapshots, currentSnapshot } = Astro.props;
-
-const menu = snapshots ?? [];
-const current = menu.find((s) => s.slug === currentSnapshot) ?? menu[0];
-const hasSnapshots = !!current;
-const latestSlug = menu[0]?.slug;
-const displayLabel = (snapshot: SnapshotLink) =>
-  snapshot.slug === latestSlug ? 'Now' : snapshot.label;
+const { backLink, nextLink } = Astro.props;
 ---
 
 <footer class="fixed bottom-0 left-0 right-0 bg-gray-50 w-full">
   <div class="w-full max-w-2xl mx-auto px-4 py-6 border-t border-gray-200/60">
     <div class="flex items-center justify-between text-sm text-gray-500">
       <div>
-        {backLink ? (
+        {backLink && (
           <a href={backLink.href} class="hit-target flex items-center gap-1.5 hover:text-gray-600 transition-colors">
             <ArrowLeft size={16} />
             {backLink.label}
           </a>
-        ) : hasSnapshots ? (
-          <div class="snapshot-menu" id="snapshot-menu">
-            <button
-              type="button"
-              id="snapshot-trigger"
-              class="snapshot-trigger hit-target inline-flex items-center gap-1.5 hover:text-gray-600 transition-colors"
-              aria-haspopup="true"
-              aria-expanded="false"
-              aria-controls="snapshot-list"
-            >
-              <span>{displayLabel(current)}</span>
-              <ChevronDown size={14} class="snapshot-chevron" aria-hidden="true" />
-            </button>
-            <ul
-              id="snapshot-list"
-              class="snapshot-list"
-              role="menu"
-              aria-label="Previous updates"
-              aria-hidden="true"
-              inert
-            >
-              {menu.map((snapshot) => {
-                const label = displayLabel(snapshot);
-                const isCurrent = snapshot.slug === currentSnapshot;
-
-                return (
-                  <li role="none">
-                    {isCurrent ? (
-                      <span class="snapshot-item snapshot-item--current" role="menuitem" aria-current="true">
-                        <span class="snapshot-label">{label}</span>
-                        <Check size={16} class="snapshot-check" aria-hidden="true" />
-                      </span>
-                    ) : (
-                      <a href={snapshot.href} class="snapshot-item" role="menuitem">
-                        <span class="snapshot-label">{label}</span>
-                      </a>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ) : text}
+        )}
       </div>
       {nextLink ? (
         <a href={nextLink.href} class="hit-target flex items-center gap-1.5 hover:text-gray-600 transition-colors">
           {nextLink.label}
           <ArrowRight size={16} />
         </a>
-      ) : (!text && !hasSnapshots) && (
+      ) : (
         <a href="mailto:hello@renegalindo.com" class="hit-target hover:text-gray-600 transition-colors">
           Say hello 👋
         </a>
@@ -92,143 +39,3 @@ const displayLabel = (snapshot: SnapshotLink) =>
     </div>
   </div>
 </footer>
-
-<style>
-  .snapshot-menu {
-    position: relative;
-  }
-
-  .snapshot-chevron {
-    color: #737373;
-    transition: transform 0.2s ease;
-  }
-
-  .snapshot-menu[data-open] .snapshot-chevron {
-    transform: rotate(180deg);
-  }
-
-  .snapshot-list {
-    position: absolute;
-    bottom: calc(100% + 0.375rem);
-    left: 0;
-    z-index: 20;
-    min-width: 12rem;
-    padding: 0.25rem;
-    border-radius: 0.5rem;
-    background: #ffffff;
-    color: #0a0a0a;
-    box-shadow:
-      0 0 0 1px rgba(10, 10, 10, 0.05),
-      0 4px 12px -2px rgba(0, 0, 0, 0.06),
-      0 2px 4px -2px rgba(0, 0, 0, 0.04);
-    opacity: 0;
-    transform: translateY(0.25rem) scale(0.98);
-    transform-origin: bottom left;
-    pointer-events: none;
-    transition: opacity 0.12s ease-out, transform 0.12s ease-out;
-  }
-
-  .snapshot-menu[data-open] .snapshot-list {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
-  }
-
-  .snapshot-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.375rem 0.5rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    color: #404040;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  a.snapshot-item {
-    cursor: pointer;
-  }
-
-  a.snapshot-item:hover,
-  a.snapshot-item:focus-visible {
-    outline: none;
-    background: #f5f5f5;
-    color: #0a0a0a;
-  }
-
-  .snapshot-item--current {
-    background: #f5f5f5;
-    color: #0a0a0a;
-  }
-
-  .snapshot-check {
-    flex-shrink: 0;
-    color: #0a0a0a;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .snapshot-chevron,
-    .snapshot-list {
-      transition: none;
-    }
-    .snapshot-menu[data-open] .snapshot-list {
-      transform: none;
-    }
-  }
-</style>
-
-<script>
-  // Reset per page-load so the document-level listeners are torn down before we
-  // re-attach, instead of accumulating across soft navigations.
-  let controller: AbortController | null = null;
-
-  function setupSnapshotMenu() {
-    controller?.abort();
-    controller = new AbortController();
-    const { signal } = controller;
-
-    const menu = document.getElementById('snapshot-menu');
-    const trigger = document.getElementById('snapshot-trigger');
-    const list = document.getElementById('snapshot-list');
-    if (!menu || !trigger || !list) return;
-
-    const open = () => {
-      menu.setAttribute('data-open', '');
-      trigger.setAttribute('aria-expanded', 'true');
-      list.setAttribute('aria-hidden', 'false');
-      list.toggleAttribute('inert', false);
-    };
-
-    const close = () => {
-      menu.removeAttribute('data-open');
-      trigger.setAttribute('aria-expanded', 'false');
-      list.setAttribute('aria-hidden', 'true');
-      list.toggleAttribute('inert', true);
-    };
-
-    trigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (trigger.getAttribute('aria-expanded') === 'true') {
-        close();
-      } else {
-        open();
-      }
-    }, { signal });
-
-    document.addEventListener('click', () => {
-      if (trigger.getAttribute('aria-expanded') === 'true') close();
-    }, { signal });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key !== 'Escape' || trigger.getAttribute('aria-expanded') !== 'true') return;
-      e.preventDefault();
-      close();
-      trigger.focus();
-    }, { signal });
-  }
-
-  document.addEventListener('astro:page-load', setupSnapshotMenu);
-</script>

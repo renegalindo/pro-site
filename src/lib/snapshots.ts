@@ -1,14 +1,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import type { RailItem } from './rail';
 
 export type NowSnapshot = CollectionEntry<'now'>;
-
-export interface SnapshotLink {
-  slug: string;
-  /** Human label for the dropdown, e.g. "July 2026". */
-  label: string;
-  /** Newest → base path (e.g. /now); older → `${basePath}/${slug}`. */
-  href: string;
-}
 
 // Dates are authored as calendar days (e.g. 2026-07-17) and parsed as UTC
 // midnight, so format in UTC to avoid slipping a day in negative timezones.
@@ -38,11 +31,19 @@ export async function getNowSnapshots(): Promise<NowSnapshot[]> {
   return entries.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 }
 
-/** Footer dropdown links: newest at `basePath`, older at dated permalinks. */
-export function snapshotMenu(entries: NowSnapshot[], basePath: string): SnapshotLink[] {
+/**
+ * Rail items for time-travel navigation: newest labelled "Now" and linked to
+ * `basePath`, older labelled by month/year at dated permalinks. `currentSlug`
+ * marks the active entry.
+ */
+export function snapshotRail(
+  entries: NowSnapshot[],
+  basePath: string,
+  currentSlug: string,
+): RailItem[] {
   return entries.map((entry, index) => ({
-    slug: entry.slug,
-    label: snapshotLabel(entry.data.date),
+    label: index === 0 ? 'Now' : snapshotLabel(entry.data.date),
     href: index === 0 ? basePath : `${basePath}/${entry.slug}`,
+    current: entry.slug === currentSlug,
   }));
 }

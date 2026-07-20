@@ -1,21 +1,21 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import SnapshotEntry from '@/components/SnapshotEntry.astro';
-import { getNowSnapshots, snapshotMenu } from '@/lib/snapshots';
+import { getNowSnapshots, snapshotRail } from '@/lib/snapshots';
 
 const snapshots = await getNowSnapshots();
 const current = snapshots[0];
 if (!current) {
   throw new Error('No Now snapshots found. Add at least one file under src/content/now/.');
 }
-const menu = snapshotMenu(snapshots, '/now');
+const rail = { heading: 'Time travel', items: snapshotRail(snapshots, '/now', current.slug) };
 ---
 
 <BaseLayout
   title="Now"
   description="What René Galindo is doing now"
-  snapshots={menu}
-  currentSnapshot={current.slug}
+  rail={rail}
+  hideFooter
 >
   <SnapshotEntry entry={current} />
 </BaseLayout>

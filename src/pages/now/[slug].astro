@@ -2,32 +2,32 @@
 import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import SnapshotEntry from '@/components/SnapshotEntry.astro';
-import { getNowSnapshots, snapshotMenu, snapshotLabel, type SnapshotLink } from '@/lib/snapshots';
+import { getNowSnapshots, snapshotRail, snapshotLabel } from '@/lib/snapshots';
+import type { RailItem } from '@/lib/rail';
 
 export async function getStaticPaths() {
   const snapshots = await getNowSnapshots();
-  const menu = snapshotMenu(snapshots, '/now');
 
   return snapshots.slice(1).map((entry) => ({
     params: { slug: entry.slug },
-    props: { entry, menu },
+    props: { entry, rail: snapshotRail(snapshots, '/now', entry.slug) },
   }));
 }
 
 interface Props {
   entry: CollectionEntry<'now'>;
-  menu: SnapshotLink[];
+  rail: RailItem[];
 }
 
-const { entry, menu } = Astro.props;
+const { entry, rail } = Astro.props;
 const label = snapshotLabel(entry.data.date);
 ---
 
 <BaseLayout
   title={`Now · ${label}`}
   description={`What René Galindo was up to in ${label}`}
-  snapshots={menu}
-  currentSnapshot={entry.slug}
+  rail={{ heading: 'Time travel', items: rail }}
+  hideFooter
 >
   <SnapshotEntry entry={entry} />
 </BaseLayout>
