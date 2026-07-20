@@ -1,0 +1,14 @@
+{
+  "worktree": {
+    "setup": "npm install"
+  },
+  "scripts": {
+    "build & preview": {
+      "command": "npm run build && npm run preview -- --port 4322"
+    },
+    "dev server": {
+      "type": "service",
+      "command": "npm run dev"
+    }
+  }
+}
