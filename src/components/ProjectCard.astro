@@ -2,37 +2,53 @@
 interface Props {
   href: string;
   title: string;
-  description: string;
   year?: string;
   logo?: string;
 }
 
-const { href, title, description, year, logo } = Astro.props;
+const { href, title, year, logo } = Astro.props;
 
 // TEMP (2026-07-08): Work detail pages still hold placeholder content, so
-// navigation to them is disabled while the cards keep their hover states.
-// To re-enable detail pages, flip this back to `true` (or revert this PR).
+// navigation to them is disabled. When re-enabled, flip this to `true` and the
+// title column becomes a link (mirroring the Stack rows).
 const WORK_DETAIL_ENABLED = false;
+
+const period = year?.replace(/-20/, '-');
+// The title column is a link once detail pages exist; until then a plain <div>.
+const Title = WORK_DETAIL_ENABLED ? 'a' : 'div';
+// Hover/focus affordances only make sense when the row actually navigates, so
+// gate the `group` on the same flag — no `group`, and every `group-hover:` /
+// `group-focus-visible:` style below stays inert until detail pages return.
+const interactive = WORK_DETAIL_ENABLED ? 'group ' : '';
 ---
 
-<a href={WORK_DETAIL_ENABLED ? href : undefined} class="group flex items-center gap-3 -mx-4 px-4 py-2.5 rounded-lg no-underline hover:bg-gray-100 hover:ring-1 hover:ring-gray-200 active:bg-gray-100 active:ring-gray-300 transition-all duration-150 relative">
-  <!-- {logo && (
-    <div class="w-12 h-12 rounded-xl shrink-0 overflow-hidden">
-      <img src={logo} alt="" class="w-full h-full object-cover" />
-    </div>
-  )} -->
-  <div class="flex-1 text-[17px]">
-    <div class="flex items-baseline justify-between gap-2">
-      <h2 class="font-medium text-gray-900">{title}</h2>
-      {year && (
-        <span class="text-gray-500 text-base transition-opacity duration-100 group-hover:opacity-0">{year.replace(/-20/, '-')}</span>
-      )}
-    </div>
-    <p class="text-gray-500 -mt-0.5">{description}</p>
-  </div>
-  {logo && (
-    <div class="absolute right-4 top-1/2 -translate-y-1/2 w-16 h-12 rounded-lg overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-0 group-hover:duration-150">
-      <img src={logo} alt="" class="w-full h-full object-cover" />
-    </div>
+<li class="relative flex items-baseline pl-8">
+  <Title
+    href={WORK_DETAIL_ENABLED ? href : undefined}
+    class={`${interactive}block w-fit rounded-sm no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300`}
+  >
+    {logo && (
+      <img
+        src={logo}
+        alt=""
+        width="24"
+        height="23"
+        class="absolute left-0 top-0.5 h-[23px] w-6 rounded object-cover shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_1px_1px_rgba(17,24,39,0.05)] transition-shadow duration-150 ease-out group-hover:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)] group-focus-visible:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)]"
+        decoding="async"
+        loading="lazy"
+      />
+    )}
+    <span class="whitespace-nowrap font-medium text-gray-900 transition-colors group-hover:text-gray-600">
+      {title}
+    </span>
+  </Title>
+  {period && (
+    <Fragment>
+      <span aria-hidden="true" class="mx-3 flex-1 border-b border-dashed border-gray-300"></span>
+      {/* Fixed width = the widest period ("2024-25", ~65px at this size) so the
+          dashed leaders all terminate at the same x. Sized to current content;
+          a longer value than ~8 chars would need this bumped. */}
+      <span class="w-[66px] shrink-0 text-right text-base text-gray-500 tabular-nums">{period}</span>
+    </Fragment>
   )}
-</a>
+</li>

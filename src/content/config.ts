@@ -13,6 +13,11 @@ const work = defineCollection({
     order: z.number().default(0),
     color: z.string().optional(),
     logo: z.string().optional(),
+    // Marks the standalone "current role" entry (rendered as the top card,
+    // kept out of the company history).
+    currentRole: z.boolean().default(false),
+    // Toggles that current-role card on/off depending on availability.
+    available: z.boolean().default(false),
   }),
 });
 

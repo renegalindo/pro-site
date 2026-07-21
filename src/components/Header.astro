@@ -25,7 +25,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
 ---
 
 <header id="site-header" class:list={[
-  "top-0 z-10 w-full bg-gray-50/70 backdrop-blur-md",
+  "top-0 z-10 w-full bg-gray-50",
   hidden ? "absolute opacity-0 pointer-events-none" : "fixed"
 ]}>
   <div class="header-inner max-w-2xl mx-auto px-4">
@@ -94,6 +94,11 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
      default keeps the expanded state before/without JS (SSR). */
   #site-header {
     --t: 0;
+    /* Avatar box and the avatar↔label gap both collapse with --t. The dropdown
+       aligns to `avatar + gap`, so it derives from these rather than repeating
+       the arithmetic — change the avatar shrink and alignment follows. */
+    --avatar-size: calc(2rem - var(--t) * 0.25rem);
+    --header-gap: calc(1rem - var(--t) * 0.125rem);
   }
 
   /* Optical alignment: nudge the avatar + menu row slightly right so the
@@ -103,7 +108,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
   }
 
   .header-trigger {
-    gap: calc(1rem - var(--t) * 0.125rem);
+    gap: var(--header-gap);
   }
 
   .header-label {
@@ -117,9 +122,10 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
     pointer-events: none;
   }
 
-  /* Align dropdown with the avatar column (avatar width + gap). */
+  /* Align dropdown with the avatar column: avatar width + gap, derived so it
+     can't drift when the avatar size changes. */
   .header-dropdown {
-    left: calc(3rem - var(--t) * 0.625rem);
+    left: calc(var(--avatar-size) + var(--header-gap));
     transition: opacity 0.15s ease-out, transform 0.15s ease-out;
   }
 
@@ -128,7 +134,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
   }
 
   /* Expanded → compact header height.
-     Expanded: 48 + 32 + 16 = 96px. Compact: 18 + 24 + 18 = 60px. */
+     Expanded: 48 + 32 + 16 = 96px. Compact: 18 + 28 + 18 = 64px. */
   .header-inner {
     padding-top: calc(3rem - var(--t) * 1.875rem);
     padding-bottom: calc(1rem + var(--t) * 0.125rem);
@@ -139,8 +145,10 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
        receives hover directly (the overlay would otherwise swallow it). */
     position: relative;
     z-index: 1;
-    width: calc(2rem - var(--t) * 0.5rem);
-    height: calc(2rem - var(--t) * 0.5rem);
+    /* Shrinks 32 → 28px on collapse, staying close to the label's ×0.9 so the
+       two keep their proportion. */
+    width: var(--avatar-size);
+    height: var(--avatar-size);
     /* transform transition is for the menu-open rotate, not the scrub. */
     transition: transform 0.2s ease-out;
   }

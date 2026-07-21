@@ -1,0 +1,75 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  logo?: string;
+  /** Availability label shown next to the pulsing dot. */
+  available?: string;
+}
+
+const { title, description, logo, available = 'Available' } = Astro.props;
+---
+
+<div class="rounded-xl bg-gray-100 p-4 ring-1 ring-gray-900/[0.04]">
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      {logo && (
+        <img
+          src={logo}
+          alt=""
+          width="24"
+          height="23"
+          class="h-[23px] w-6 shrink-0 rounded object-cover shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_1px_1px_rgba(17,24,39,0.05)]"
+          decoding="async"
+          loading="lazy"
+        />
+      )}
+      <h2 class="font-medium text-gray-900">{title}</h2>
+    </div>
+
+    <div class="flex shrink-0 items-center gap-2 text-sm text-gray-600">
+      <span class="pulse-dot" aria-hidden="true"></span>
+      {available}
+    </div>
+  </div>
+
+  <p class="mt-2 text-gray-600">{description}</p>
+</div>
+
+<style>
+  .pulse-dot {
+    position: relative;
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: #22c55e;
+  }
+
+  /* Soft expanding halo — the "I'm around" signal, kept slow and low-contrast. */
+  .pulse-dot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: #22c55e;
+    animation: pulse-ring 2.4s ease-out infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(2.6);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-dot::before {
+      animation: none;
+    }
+  }
+</style>

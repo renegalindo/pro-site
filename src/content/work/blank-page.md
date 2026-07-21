@@ -1,7 +1,7 @@
 ---
 title: "Blank Page"
 description: "The simplest way to write online"
-year: "Current"
+year: "Now"
 featured: false
 sideProject: true
 order: 1

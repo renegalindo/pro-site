@@ -1,7 +1,7 @@
 ---
 title: "Emojinote"
 description: "Organize your notes with emoji"
-year: "2018-2019"
+year: "2018"
 featured: false
 sideProject: true
 order: 2
