@@ -12,13 +12,17 @@ const sideProjects = work.filter(p => p.data.sideProject).sort((a, b) => a.data.
 
   <div class="mb-8 space-y-4 text-gray-700 leading-relaxed">
     <p>
-      A selection of product design work from the last decade — from early-stage startups to established companies.
+      I've been designing the software I want to use since I bought my first iPhone in 2010. Along the way I've worked for different startups, mostly 0 to 1, moving between contributor and leadership roles.
     </p>
     <p>
-      Each project covers the problem, the approach, and what we shipped. More case studies coming soon.
+      These days I mostly design by building: the fastest way I know to find the right interface is to make the real one and live in it until the solution is obvious.
+    </p>
+    <p>
+      I obsess over simplicity and getting out of the way, which almost always means removing things until the essentials are left. When it works, no one notices the design; they just get what they came for.
     </p>
   </div>
 
+  <h2 class="mb-2 text-gray-500 text-base pb-1">Companies</h2>
   <div class="space-y-0">
     {mainProjects.map((project) => (
       <ProjectCard
