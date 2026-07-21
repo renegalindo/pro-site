@@ -2,16 +2,11 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
-import CurrentRoleCard from '@/components/CurrentRoleCard.astro';
 
 const work = await getCollection('work');
 const byOrder = (a, b) => a.data.order - b.data.order;
 
-// The current role stands alone at the top as its own card (when `available`),
-// and is kept out of the company history regardless — both keyed off the
-// semantic `currentRole` flag rather than a hardcoded slug.
-const currentRole = work.filter(p => p.data.currentRole && p.data.available).sort(byOrder);
-const companies = work.filter(p => !p.data.sideProject && !p.data.currentRole).sort(byOrder);
+const companies = work.filter(p => !p.data.sideProject).sort(byOrder);
 const sideProjects = work.filter(p => p.data.sideProject).sort(byOrder);
 
 const sections = [
@@ -33,14 +28,6 @@ const sections = [
         I obsess over simplicity and getting out of the way, which almost always means removing things until the essentials are left. When it works, no one notices the design; they just get what they came for.
       </p>
     </div>
-
-    {currentRole.map((project) => (
-      <CurrentRoleCard
-        title={project.data.title}
-        description={project.data.description}
-        logo={project.data.logo}
-      />
-    ))}
 
     {sections.map((section) => (
       <section>

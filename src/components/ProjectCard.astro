@@ -22,7 +22,7 @@ const Title = WORK_DETAIL_ENABLED ? 'a' : 'div';
 const interactive = WORK_DETAIL_ENABLED ? 'group ' : '';
 ---
 
-<li class="relative flex items-baseline pl-8">
+<li class="relative flex items-baseline pl-7">
   <Title
     href={WORK_DETAIL_ENABLED ? href : undefined}
     class={`${interactive}block w-fit rounded-sm no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300`}
@@ -31,9 +31,9 @@ const interactive = WORK_DETAIL_ENABLED ? 'group ' : '';
       <img
         src={logo}
         alt=""
-        width="24"
-        height="23"
-        class="absolute left-0 top-0.5 h-[23px] w-6 rounded object-cover shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_1px_1px_rgba(17,24,39,0.05)] transition-shadow duration-150 ease-out group-hover:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)] group-focus-visible:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)]"
+        width="20"
+        height="20"
+        class="absolute left-0 top-0.5 h-5 w-5 rounded-md shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_1px_1px_rgba(17,24,39,0.05)] transition-shadow duration-150 ease-out group-hover:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)] group-focus-visible:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)]"
         decoding="async"
         loading="lazy"
       />
