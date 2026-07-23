@@ -10,19 +10,3 @@ color: "bg-rose-100"
 logo: "/logos/cabify_logo.jpeg"
 externalUrl: "https://cabify.com/"
 ---
-
-## Overview
-
-Placeholder content for Cabify project.
-
-## Challenge
-
-Placeholder content.
-
-## Approach
-
-Placeholder content.
-
-## Outcome
-
-Placeholder content.

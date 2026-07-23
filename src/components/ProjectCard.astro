@@ -2,44 +2,34 @@
 import AppIconLabel from '@/components/AppIconLabel.astro';
 
 interface Props {
-  href: string;
   title: string;
   year?: string;
   logo?: string;
   externalUrl?: string;
 }
 
-const { href, title, year, logo, externalUrl } = Astro.props;
-
-// TEMP (2026-07-08): Work detail pages still hold placeholder content, so
-// navigation to them is disabled. When re-enabled, flip this to `true` and the
-// title column becomes a link (mirroring the Stack rows).
-const WORK_DETAIL_ENABLED = false;
+const { title, year, logo, externalUrl } = Astro.props;
 
 const period = year?.replace(/-20/, '-');
-// Link priority: externalUrl (a temporary stand-in) wins over the internal
-// detail page, which still exists underneath. Remove an item's externalUrl once
-// its real detail page is ready and it falls back to linking internally.
-// Items with neither an externalUrl nor WORK_DETAIL_ENABLED render as plain text
-// (no link) rather than pointing at a placeholder page.
-const isExternal = !!externalUrl;
-const isLinked = isExternal || WORK_DETAIL_ENABLED;
-const Title = isLinked ? 'a' : 'div';
-// Hover/focus affordances only make sense when the row actually navigates, so
-// gate the `group` on the same condition — no `group`, and every
-// `group-hover:` / `group-focus-visible:` style below stays inert otherwise.
+// Work items link out to the product/company. Without a URL the title is plain
+// text (no dead link) — there are no internal detail pages.
+const isLinked = !!externalUrl;
+// Hover/focus affordances only make sense when the row navigates, so the
+// `group` (and every `group-hover:` / `group-focus-visible:` style) is gated on
+// the same condition.
 const interactive = isLinked ? 'group ' : '';
+const Tag = isLinked ? 'a' : 'div';
 ---
 
 <li class="relative flex items-baseline pl-7">
-  <Title
-    href={isLinked ? (externalUrl ?? href) : undefined}
-    target={isExternal ? '_blank' : undefined}
-    rel={isExternal ? 'noopener noreferrer' : undefined}
+  <Tag
+    href={externalUrl}
+    target={isLinked ? '_blank' : undefined}
+    rel={isLinked ? 'noopener noreferrer' : undefined}
     class={`${interactive}block w-fit rounded-sm no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300`}
   >
     <AppIconLabel icon={logo} label={title} />
-  </Title>
+  </Tag>
   {period && (
     <Fragment>
       <span aria-hidden="true" class="mx-3 flex-1 border-b border-dashed border-gray-300"></span>

@@ -10,19 +10,3 @@ color: "bg-purple-100"
 logo: "/logos/lana_app_logo.jpeg"
 externalUrl: "https://www.linkedin.com/company/lana-app/"
 ---
-
-## Overview
-
-Placeholder content for Lana project.
-
-## Challenge
-
-Placeholder content.
-
-## Approach
-
-Placeholder content.
-
-## Outcome
-
-Placeholder content.

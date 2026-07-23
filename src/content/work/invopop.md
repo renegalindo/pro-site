@@ -10,19 +10,3 @@ color: "bg-green-100"
 logo: "/logos/invopop_logo.jpeg"
 externalUrl: "https://invopop.com/"
 ---
-
-## Overview
-
-Placeholder content for Invopop project.
-
-## Challenge
-
-Placeholder content.
-
-## Approach
-
-Placeholder content.
-
-## Outcome
-
-Placeholder content.

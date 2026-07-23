@@ -9,19 +9,3 @@ color: "bg-teal-100"
 logo: "/app-icons/blank-page.svg"
 externalUrl: "https://blank.page/"
 ---
-
-## Overview
-
-Placeholder content for Blank Page project.
-
-## Challenge
-
-Placeholder content.
-
-## Approach
-
-Placeholder content.
-
-## Outcome
-
-Placeholder content.

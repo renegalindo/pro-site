@@ -35,7 +35,6 @@ const sections = [
         <ul class="flex flex-col gap-4 text-gray-700 sm:gap-2.5 sm:pr-4">
           {section.items.map((project) => (
             <ProjectCard
-              href={`/work/${project.slug}`}
               title={project.data.title}
               year={project.data.year}
               logo={project.data.logo}
