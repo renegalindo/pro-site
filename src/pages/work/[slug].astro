@@ -4,6 +4,9 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 export async function getStaticPaths() {
+  // Every project gets a detail page generated, even ones with an externalUrl —
+  // the external link is a temporary stand-in shown in the list, not a
+  // replacement for the (in-progress) detail page.
   const work = await getCollection('work');
   const mainProjects = work.filter((p) => !p.data.sideProject).sort((a, b) => a.data.order - b.data.order);
   const sideProjects = work.filter((p) => p.data.sideProject).sort((a, b) => a.data.order - b.data.order);

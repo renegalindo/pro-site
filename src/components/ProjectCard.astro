@@ -1,12 +1,15 @@
 ---
+import AppIconLabel from '@/components/AppIconLabel.astro';
+
 interface Props {
   href: string;
   title: string;
   year?: string;
   logo?: string;
+  externalUrl?: string;
 }
 
-const { href, title, year, logo } = Astro.props;
+const { href, title, year, logo, externalUrl } = Astro.props;
 
 // TEMP (2026-07-08): Work detail pages still hold placeholder content, so
 // navigation to them is disabled. When re-enabled, flip this to `true` and the
@@ -14,33 +17,28 @@ const { href, title, year, logo } = Astro.props;
 const WORK_DETAIL_ENABLED = false;
 
 const period = year?.replace(/-20/, '-');
-// The title column is a link once detail pages exist; until then a plain <div>.
-const Title = WORK_DETAIL_ENABLED ? 'a' : 'div';
+// Link priority: externalUrl (a temporary stand-in) wins over the internal
+// detail page, which still exists underneath. Remove an item's externalUrl once
+// its real detail page is ready and it falls back to linking internally.
+// Items with neither an externalUrl nor WORK_DETAIL_ENABLED render as plain text
+// (no link) rather than pointing at a placeholder page.
+const isExternal = !!externalUrl;
+const isLinked = isExternal || WORK_DETAIL_ENABLED;
+const Title = isLinked ? 'a' : 'div';
 // Hover/focus affordances only make sense when the row actually navigates, so
-// gate the `group` on the same flag — no `group`, and every `group-hover:` /
-// `group-focus-visible:` style below stays inert until detail pages return.
-const interactive = WORK_DETAIL_ENABLED ? 'group ' : '';
+// gate the `group` on the same condition — no `group`, and every
+// `group-hover:` / `group-focus-visible:` style below stays inert otherwise.
+const interactive = isLinked ? 'group ' : '';
 ---
 
 <li class="relative flex items-baseline pl-7">
   <Title
-    href={WORK_DETAIL_ENABLED ? href : undefined}
+    href={isLinked ? (externalUrl ?? href) : undefined}
+    target={isExternal ? '_blank' : undefined}
+    rel={isExternal ? 'noopener noreferrer' : undefined}
     class={`${interactive}block w-fit rounded-sm no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300`}
   >
-    {logo && (
-      <img
-        src={logo}
-        alt=""
-        width="20"
-        height="20"
-        class="absolute left-0 top-0.5 h-5 w-5 rounded-md shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_1px_1px_rgba(17,24,39,0.05)] transition-shadow duration-150 ease-out group-hover:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)] group-focus-visible:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_3px_8px_rgba(17,24,39,0.22)]"
-        decoding="async"
-        loading="lazy"
-      />
-    )}
-    <span class="whitespace-nowrap font-medium text-gray-900 transition-colors group-hover:text-gray-600">
-      {title}
-    </span>
+    <AppIconLabel icon={logo} label={title} />
   </Title>
   {period && (
     <Fragment>

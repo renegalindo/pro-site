@@ -55,7 +55,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
           <path fill-rule="evenodd" clip-rule="evenodd" d="M78.822 154.776C72.6077 158.674 72.6077 158.674 65.4646 160.243C58.6863 161.781 51.9745 160.265 48.414 156.467C44.7318 152.58 43.4934 145.85 44.7097 136.463C45.1852 132.851 42.6198 129.547 38.9819 129.086C35.3662 128.482 32.0379 131.15 31.5624 134.773C29.7932 148.233 32.2037 158.575 38.7166 165.48C43.9136 170.992 51.7533 174 60.2454 174C62.9103 174 65.6304 173.715 68.3506 173.111C77.296 171.135 78.1253 170.805 85.9098 165.909C89.0059 163.965 89.9347 159.892 87.9665 156.829C86.0093 153.755 81.8849 152.811 78.822 154.776" fill="currentColor"/>
         </svg>
         {currentLabel && (
-          <span id="header-label" class="header-label select-none text-xl font-medium hover:text-gray-600">
+          <span id="header-label" class="header-label select-none text-xl font-medium hover:text-gray-700/95">
             {currentLabel}
           </span>
         )}
@@ -73,7 +73,7 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
               <a
                 href={link.href}
                 class:list={[
-                  'hit-target hover:text-gray-600 transition-colors',
+                  'hit-target hover:text-gray-700/95 transition-colors',
                   isActive(link.href) ? 'text-gray-900 font-medium' : 'text-gray-500',
                 ]}
               >

@@ -2,8 +2,8 @@
 # The blog moved off the apex on 2026-07-08. These rules preserve every
 # old inbound link and its SEO. Ghost's URL namespaces are date-prefixed
 # posts (2017-2026) plus /newsletter, /tag, /author, /rss, and a few pages
-# — none of which overlap the portfolio's routes (/, /work, /now, /stack,
-# /principles), so the portfolio is unaffected.
+# — none of which overlap the portfolio's routes (/, /work, /now, /stack),
+# so the portfolio is unaffected.
 
 # Dated posts (1,335 of them across ten years)
 /2017/*  https://shuffle.renegalindo.com/2017/:splat  301
@@ -30,5 +30,5 @@
 # Standalone blog pages
 /bootlegs  https://shuffle.renegalindo.com/bootlegs/  301
 /gracias   https://shuffle.renegalindo.com/gracias/   301
-# Remove the line below the day you add a portfolio /about page:
-/about     https://shuffle.renegalindo.com/about/     301
+# The portfolio's "About" lives on the home page — send /about there.
+/about     /     301

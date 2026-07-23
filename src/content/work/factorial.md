@@ -8,6 +8,7 @@ featured: true
 order: 1
 color: "bg-blue-100"
 logo: "/logos/factorial_logo.jpeg"
+externalUrl: "https://factorialhr.com/"
 ---
 
 ## Overview

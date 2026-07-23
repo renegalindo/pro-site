@@ -6,7 +6,8 @@ featured: false
 sideProject: true
 order: 2
 color: "bg-yellow-100"
-logo: "/logos/blankdotpage_logo.jpeg"
+logo: "/logos/emojinote_logo.jpeg"
+externalUrl: "https://www.youtube.com/watch?v=-08PnmPx3zg&t=31s"
 ---
 
 ## Overview

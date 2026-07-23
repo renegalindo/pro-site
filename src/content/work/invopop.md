@@ -8,6 +8,7 @@ featured: true
 order: 2
 color: "bg-green-100"
 logo: "/logos/invopop_logo.jpeg"
+externalUrl: "https://invopop.com/"
 ---
 
 ## Overview

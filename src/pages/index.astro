@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import ContactMenu from '@/components/ContactMenu.astro';
 import { getPostCount } from '@/lib/ghost';
 
 const postCount = await getPostCount();
@@ -25,7 +26,7 @@ const postCountLabel = postCount.toLocaleString('en-US');
     </p>
 
     <p>
-      See what I'm up to <a href="/now" >now</a>, or say <a href="https://www.linkedin.com/in/renegalindo/" target="_blank" rel="noopener noreferrer">hello</a>.
+      See what I'm up to <a href="/now" >now</a>, or say <ContactMenu />.
     </p>
 
   </div>

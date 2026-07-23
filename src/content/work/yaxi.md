@@ -8,6 +8,7 @@ featured: true
 order: 5
 color: "bg-orange-100"
 logo: "/logos/yaxi_logo.jpeg"
+externalUrl: "https://www.linkedin.com/company/yaxii/"
 ---
 
 ## Overview

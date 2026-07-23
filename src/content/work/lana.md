@@ -8,6 +8,7 @@ featured: true
 order: 3
 color: "bg-purple-100"
 logo: "/logos/lana_app_logo.jpeg"
+externalUrl: "https://www.linkedin.com/company/lana-app/"
 ---
 
 ## Overview

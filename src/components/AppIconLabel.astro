@@ -1,0 +1,23 @@
+---
+// Shared leading app-icon + label for the Stack list and the Work ProjectCard.
+// Both consumers render this inside a `group`-classed <a>, so the group-hover /
+// group-focus-visible styles resolve against their parent link; the icon is
+// absolutely positioned within the row's `relative pl-7` <li>.
+interface Props {
+  icon?: string;
+  label: string;
+}
+const { icon, label } = Astro.props;
+---
+{icon && (
+  <img
+    src={icon}
+    alt=""
+    width="20"
+    height="20"
+    class="absolute left-0 top-0.5 h-5 w-5 rounded-md shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_1px_1px_rgba(17,24,39,0.05)] transition-shadow duration-150 ease-out group-hover:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_2.5px_7px_rgba(17,24,39,0.19)] group-focus-visible:shadow-[0_0_0_1px_rgba(17,24,39,0.05),0_2.5px_7px_rgba(17,24,39,0.19)]"
+    decoding="async"
+    loading="lazy"
+  />
+)}
+<span class="whitespace-nowrap font-medium text-gray-900 transition-colors group-hover:text-gray-700/95 group-focus-visible:text-gray-700/95">{label}</span>

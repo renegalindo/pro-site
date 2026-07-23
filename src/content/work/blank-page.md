@@ -6,7 +6,8 @@ featured: false
 sideProject: true
 order: 1
 color: "bg-teal-100"
-logo: "/logos/blankdotpage_logo.jpeg"
+logo: "/app-icons/blank-page.svg"
+externalUrl: "https://blank.page/"
 ---
 
 ## Overview

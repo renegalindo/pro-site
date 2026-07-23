@@ -8,6 +8,7 @@ featured: true
 order: 4
 color: "bg-rose-100"
 logo: "/logos/cabify_logo.jpeg"
+externalUrl: "https://cabify.com/"
 ---
 
 ## Overview

@@ -32,13 +32,14 @@ const sections = [
     {sections.map((section) => (
       <section>
         <h2 class="mt-8 mb-2 pb-1 text-base text-gray-500">{section.label}</h2>
-        <ul class="flex flex-col gap-4 text-gray-700 sm:gap-2.5">
+        <ul class="flex flex-col gap-4 text-gray-700 sm:gap-2.5 sm:pr-4">
           {section.items.map((project) => (
             <ProjectCard
               href={`/work/${project.slug}`}
               title={project.data.title}
               year={project.data.year}
               logo={project.data.logo}
+              externalUrl={project.data.externalUrl}
             />
           ))}
         </ul>

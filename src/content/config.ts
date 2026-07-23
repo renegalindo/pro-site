@@ -13,6 +13,9 @@ const work = defineCollection({
     order: z.number().default(0),
     color: z.string().optional(),
     logo: z.string().optional(),
+    // When set, the project card links straight out to this URL (new tab)
+    // instead of to its (placeholder) internal detail page.
+    externalUrl: z.string().url().optional(),
   }),
 });
 

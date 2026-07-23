@@ -16,7 +16,11 @@ export function watchHeaderCollapse(header: HTMLElement, signal: AbortSignal): v
 
   const update = () => {
     const t = Math.min(Math.max(window.scrollY / COLLAPSE_DISTANCE, 0), 1);
-    header.style.setProperty('--t', t.toFixed(4));
+    const value = t.toFixed(4);
+    header.style.setProperty('--t', value);
+    // Also publish on the root so fixed elements outside the header subtree
+    // (e.g. the section rail) can align to the header's collapse.
+    document.documentElement.style.setProperty('--t', value);
     ticking = false;
   };
 
