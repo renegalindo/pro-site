@@ -23,6 +23,11 @@ interface Props {
     label: string;
   };
   rail?: { heading?: string; items: RailItem[] };
+  /** Opt out of the staggered content reveal — for full-screen takeover pages
+      (e.g. the portfolio deck) that aren't a stack of document blocks and own
+      their own entry animation. (Also avoids the reveal's lingering `transform`
+      clobbering the page's own positioning transforms.) */
+  noStagger?: boolean;
 }
 
 const {
@@ -35,6 +40,7 @@ const {
   backLink,
   nextLink,
   rail,
+  noStagger = false,
 } = Astro.props;
 
 const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`;
@@ -203,7 +209,7 @@ const contentTopPadding = showPageHeader
     <div class="min-h-screen flex flex-col">
       <Header hidden={!showNavHeader} />
       {showPageHeader && <PageHeader title={pageTitle!} logo={pageLogo} />}
-      <main class:list={[
+      <main data-no-stagger={noStagger ? '' : undefined} class:list={[
         "flex-1 w-full max-w-2xl mx-auto px-4 pb-24 text-[17px]",
         contentTopPadding,
       ]}>
@@ -224,6 +230,13 @@ const contentTopPadding = showPageHeader
       function runContentStagger() {
         const main = document.querySelector('main');
         if (!main) return;
+
+        // Full-screen takeover pages opt out: reveal main without tagging its
+        // children, so their positioning transforms aren't overridden.
+        if (main.hasAttribute('data-no-stagger')) {
+          main.classList.add('rise-ready');
+          return;
+        }
 
         // Pick the blocks to cascade. Pages either place several blocks
         // directly in <main>, or wrap them in a single container — in that one

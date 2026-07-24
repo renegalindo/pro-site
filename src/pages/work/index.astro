@@ -13,6 +13,8 @@ const sections = [
   { label: 'Companies', items: companies },
   { label: 'Projects', items: sideProjects },
 ];
+
+const portfolioUrl = '/portfolio';
 ---
 
 <BaseLayout title="Work" description="Design work by René Galindo" hideFooter>
@@ -28,6 +30,28 @@ const sections = [
         I obsess over simplicity and getting out of the way, which almost always means removing things until the essentials are left. When it works, no one notices the design; they just get what they came for.
       </p>
     </div>
+
+    <a
+      href={portfolioUrl}
+      class="group -ml-px inline-flex w-fit items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-900 no-underline transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300"
+    >
+      View portfolio
+      <svg
+        class="text-gray-400 transition-colors group-hover:text-gray-500"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12h14" />
+        <path d="m12 5 7 7-7 7" />
+      </svg>
+    </a>
 
     {sections.map((section) => (
       <section>
