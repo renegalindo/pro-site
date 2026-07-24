@@ -1,10 +1,11 @@
 // Parser for the single-file portfolio deck (`src/data/portfolio.md`).
 //
 // Authoring conventions (all markdown-native):
-//   +++ … +++      A metadata block that STARTS a new project. Holds
-//                  `project`, `period`, `description`, `website`. Every slide
-//                  until the next +++ belongs to this project.
-//   ---            A slide break within a project.
+//   +++ … +++      A metadata block that STARTS a new section. Holds
+//                  `project`, `period`, `description`, `website`, and optional
+//                  `slug` / `intro`. Every slide until the next +++ belongs to
+//                  this section.
+//   ---            A slide break within a section.
 //   #  heading     Slide heading.
 //   ## heading     Optional subheading.
 //   ![alt](src)    Media. Type inferred from src (youtube:ID / .mp4|.webm → video).
@@ -37,10 +38,24 @@ export interface Period {
 
 export interface Project {
   title: string;
+  /** URL-safe id used in the route (`/portfolio/<slug>`). Derived from the
+      title unless a `slug:` is authored. Empty string for the intro section
+      (authored with `intro: true`), which lives at the bare `/portfolio` —
+      an empty slug IS the "this is the intro" signal, checked as `!slug`. */
+  slug: string;
   description?: string;
   website?: string;
   period?: Period;
   slides: Slide[];
+}
+
+/** Title → URL-safe slug (lowercase, non-alphanumerics collapsed to hyphens). */
+export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 const FENCE = /^\+\+\+[ \t]*$/m;
@@ -61,8 +76,10 @@ export function parsePortfolio(raw: string): Project[] {
     const body = parts[i + 1] ?? '';
     if (!meta.project) continue;
 
+    const intro = meta.intro === 'true';
     projects.push({
       title: meta.project,
+      slug: intro ? '' : meta.slug || slugify(meta.project),
       description: meta.description,
       website: meta.website,
       period: meta.period ? parsePeriod(meta.period) : undefined,

@@ -3,6 +3,10 @@
 // the component decides placement from which fields are present and (for images)
 // from the media's aspect ratio — landscape stacks text above media, portrait
 // sets media beside the text. See src/lib/portfolio.ts for the content model.
+//
+// Images carry their URL in `data-src`, not `src`: the deck loads them a section
+// at a time (current ± 1) and sets `data-orientation` once each one reports its
+// natural size — so a 100-slide deck never fetches more than a few images ahead.
 import type { Slide } from '@/lib/portfolio';
 
 interface Props {
@@ -27,7 +31,7 @@ const hasText = !!(heading || subheading || description);
     <figure class="slide-media">
       <div class="slide-frame">
         {media.type === 'image' && (
-          <img src={media.src} alt={media.alt} loading="lazy" data-media-img />
+          <img data-src={media.src} alt={media.alt} loading="lazy" data-media-img />
         )}
         {media.type === 'video' && (
           <video src={media.src} controls playsinline class="slide-asset" />
@@ -124,22 +128,3 @@ const hasText = !!(heading || subheading || description);
     }
   }
 </style>
-
-<script>
-  // Flip a slide to the portrait layout once its image reports its natural size
-  // (default/no attribute renders landscape). Video/YouTube stay landscape
-  // (16:9). Runs per page load for view transitions.
-  function orientSlides() {
-    document.querySelectorAll<HTMLImageElement>('img[data-media-img]').forEach((img) => {
-      const apply = () => {
-        if (img.naturalHeight > img.naturalWidth) {
-          img.closest<HTMLElement>('.slide')?.setAttribute('data-orientation', 'portrait');
-        }
-      };
-      if (img.complete) apply();
-      else img.addEventListener('load', apply, { once: true });
-    });
-  }
-
-  document.addEventListener('astro:page-load', orientSlides);
-</script>

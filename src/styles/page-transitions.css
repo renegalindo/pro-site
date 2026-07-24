@@ -1,0 +1,30 @@
+/* Cross-page View Transition rules, kept in one place and imported into
+   BaseLayout (bundled into every page) rather than inside the component that
+   owns the `transition:name`. Astro's client router swaps each page's own CSS
+   chunk mid-transition, and the transition's pseudo-element styles resolve
+   live against whatever's currently attached — a rule scoped to a component's
+   page-specific chunk vanishes at the exact moment the page it names swaps
+   out. Any future `transition:name` exit/entry animation belongs here too. */
+
+/* Portfolio deck (see Deck.astro, which carries transition:name="deck").
+   Exit (deck → /work, old-only group): the deck drops straight down to
+   reveal /work sitting behind it (which arrives with its own reveal
+   suppressed via suppressNextReveal(), so it reads as if it had been there
+   all along).
+   Entry (/work → deck, new-only group): suppress the default fade-in so only
+   the deck's own `deck-enter` keyframe (in Deck.astro) plays. */
+@keyframes deck-slide-off {
+  to { transform: translateY(100%); }
+}
+::view-transition-group(deck) { z-index: 1; }
+::view-transition-old(deck) {
+  animation: deck-slide-off 0.34s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+::view-transition-new(deck) {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(deck) {
+    animation: none;
+  }
+}

@@ -6,6 +6,7 @@ import Footer from '@/components/Footer.astro';
 import Lightbox from '@/components/Lightbox.astro';
 import SectionRail from '@/components/SectionRail.astro';
 import type { RailItem } from '@/lib/rail';
+import '@/styles/page-transitions.css';
 
 interface Props {
   title: string;
@@ -225,11 +226,21 @@ const contentTopPadding = showPageHeader
     <Lightbox transition:persist />
 
     <script>
+      import { consumeSuppressNextReveal } from '@/lib/transitions';
+
       // Reveal the main content blocks in a subtle top → bottom cascade on each
       // load/navigation.
       function runContentStagger() {
         const main = document.querySelector('main');
         if (!main) return;
+
+        // The previous page (e.g. the portfolio deck, dropping away to reveal
+        // this one) asked us to skip the reveal — so it reads as if this page
+        // had been sitting there all along.
+        if (consumeSuppressNextReveal()) {
+          main.classList.add('rise-ready');
+          return;
+        }
 
         // Full-screen takeover pages opt out: reveal main without tagging its
         // children, so their positioning transforms aren't overridden.

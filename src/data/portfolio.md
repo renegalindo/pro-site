@@ -1,4 +1,39 @@
 +++
+project: Intro
+intro: true
++++
+
+# Hi, I'm René
+
+## A technical product designer
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua.
+
+![Portrait placeholder](/portfolio/ph-square.svg)
+*A friendly hello.*
+
+---
+
+# What I care about
+
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.
+
+![Values placeholder](/portfolio/ph-wide.svg)
+*The through-line across the work.*
+
+---
+
+# How this deck works
+
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+deserunt mollit anim id est laborum. Use the arrows or the rail on the right.
+
+![Guide placeholder](/portfolio/ph-wide.svg)
+*Arrow keys, or jump around from the rail.*
+
++++
 project: Blank Page
 period: 2025 – Now
 description: A calmer place to write

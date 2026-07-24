@@ -1,0 +1,29 @@
+---
+// Routes for the portfolio deck. One page renders both:
+//   /portfolio            → the intro section
+//   /portfolio/<slug>     → each project
+// Every route renders the whole deck (all sections in the DOM) and only differs
+// in which section it boots on — so moving between projects is a client-side
+// pushState, not a reload, and fullscreen survives the whole presentation.
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Deck from '@/components/Deck.astro';
+import { parsePortfolio } from '@/lib/portfolio';
+import raw from '@/data/portfolio.md?raw';
+
+export function getStaticPaths() {
+  const projects = parsePortfolio(raw);
+  return projects.map((p) => ({
+    // The intro's empty slug (`undefined` rest param) resolves to the bare `/portfolio`.
+    params: { project: p.slug || undefined },
+    props: { slug: p.slug },
+  }));
+}
+
+const { slug } = Astro.props as { slug: string };
+const projects = parsePortfolio(raw);
+const initialSection = Math.max(0, projects.findIndex((p) => p.slug === slug));
+---
+
+<BaseLayout title="Portfolio" description="Selected work by René Galindo" hideHeader hideFooter noStagger>
+  <Deck projects={projects} initialSection={initialSection} />
+</BaseLayout>
