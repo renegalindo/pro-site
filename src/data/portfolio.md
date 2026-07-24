@@ -1,7 +1,17 @@
 +++
 project: Intro
-intro: true
+slug: intro
 +++
+
+# What I care about
+
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.
+
+![Values placeholder](/portfolio/ph-wide.svg)
+*The through-line across the work.*
+
+---
 
 # Hi, I'm René
 
@@ -12,16 +22,6 @@ incididunt ut labore et dolore magna aliqua.
 
 ![Portrait placeholder](/portfolio/ph-square.svg)
 *A friendly hello.*
-
----
-
-# What I care about
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.
-
-![Values placeholder](/portfolio/ph-wide.svg)
-*The through-line across the work.*
 
 ---
 

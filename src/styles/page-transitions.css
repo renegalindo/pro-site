@@ -11,20 +11,29 @@
    reveal /work sitting behind it (which arrives with its own reveal
    suppressed via suppressNextReveal(), so it reads as if it had been there
    all along).
-   Entry (/work → deck, new-only group): suppress the default fade-in so only
-   the deck's own `deck-enter` keyframe (in Deck.astro) plays. */
+   Entry (/work → deck, new-only group): the deck rises from the bottom. This
+   MUST be driven here through the VT pseudo-element — not the component's own
+   `deck-enter` CSS mount animation, which the transition snapshots over and
+   masks, making the deck pop in instead of slide. (Deck.astro's `deck-enter`
+   still covers the no-transition path: a direct load of a /work/<slug> route.) */
 @keyframes deck-slide-off {
   to { transform: translateY(100%); }
+}
+/* Also reused by Deck.astro's `.deck` mount animation (the direct-load path). */
+@keyframes deck-slide-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 ::view-transition-group(deck) { z-index: 1; }
 ::view-transition-old(deck) {
   animation: deck-slide-off 0.34s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 ::view-transition-new(deck) {
-  animation: none;
+  animation: deck-slide-in 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(deck) {
+  ::view-transition-old(deck),
+  ::view-transition-new(deck) {
     animation: none;
   }
 }

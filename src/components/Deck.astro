@@ -4,8 +4,8 @@
 // DOM) so that moving between projects is a client-side pushState — never a
 // document reload — which keeps browser fullscreen alive across the whole deck.
 //
-// Sections = the intro (at `/portfolio`) followed by one per project (at
-// `/portfolio/<slug>`). The URL names the *section*, never the slide: stepping
+// Sections = the intro (at `/work/intro`) followed by one per project (at
+// `/work/<slug>`). The URL names the *section*, never the slide: stepping
 // within a section changes nothing; crossing into another section pushes its
 // URL. `initialSection` decides which section this route boots on.
 //
@@ -35,7 +35,7 @@ const slides = projects.flatMap((p, pi) =>
   p.slides.map((slide) => ({ slide, section: pi }))
 );
 
-const hrefFor = (p: Project) => (p.slug ? `/portfolio/${p.slug}` : '/portfolio');
+const hrefFor = (p: Project) => `/work/${p.slug}`;
 
 // SSR the initial state so the right slide/section paints before JS boots (and
 // as a no-JS fallback for a shared deep link). Every route boots on its
@@ -44,7 +44,22 @@ const initialIndex = sectionStarts[initialSection] ?? 0;
 const initialCount = projects[initialSection]?.slides.length ?? 0;
 ---
 
-<div class="deck" id="deck" data-initial={initialIndex} tabindex="-1" transition:name="deck">
+<!-- Dimmed strip left above the drawer. Clicking it closes back to /work. -->
+<button class="deck-scrim" type="button" data-scrim aria-label="Close"></button>
+
+<div
+  class="deck"
+  id="deck"
+  data-initial={initialIndex}
+  tabindex="-1"
+  transition:name="deck"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Selected work"
+>
+  <!-- Grabber handle — click or flick up to present; drag down to dismiss. -->
+  <button class="deck-grabber deck-chrome" type="button" data-grabber aria-label="Present fullscreen"></button>
+
   <!-- Table of contents (sections), right — bars at rest, labels on hover.
        Deliberately NOT .deck-chrome: it stays visible while presenting in
        fullscreen as a subtle position cue; only the bottom controls fade. -->
@@ -91,24 +106,40 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     <button class="deck-btn" type="button" data-next aria-label="Next slide">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
     </button>
-    <span class="deck-controls-sep" aria-hidden="true"></span>
-    <button class="deck-btn" type="button" data-fullscreen aria-label="Toggle fullscreen">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-    </button>
-    <a class="deck-btn" href="/work" data-exit aria-label="Exit portfolio">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-    </a>
   </div>
 </div>
 
 <style>
-  /* The deck is a fixed full-viewport surface, so it escapes BaseLayout's
-     constrained <main> and fills the screen. */
-  .deck {
+  /* Dimmed backdrop. The drawer stops short of the top, so only a thin strip
+     of this shows — clicking it closes back to /work. A <button>, so it's
+     reachable/actionable via keyboard too; reset its default button styling. */
+  .deck-scrim {
     position: fixed;
     inset: 0;
+    appearance: none;
+    border: none;
+    padding: 0;
+    background: rgb(10 10 10 / 0.38);
+    cursor: pointer;
+    z-index: 39;
+    animation: deck-scrim-in 0.42s ease both;
+  }
+  @keyframes deck-scrim-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* The deck is a bottom drawer: flush to the sides and bottom, stopping short
+     of the top so a dimmed strip of /work-space peeks above it. Fixed, so it
+     escapes BaseLayout's constrained <main>. */
+  .deck {
+    position: fixed;
+    inset: 2rem 0 0 0;
     background: #fafafa;
     color: #0a0a0a;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -8px 40px -12px rgb(0 0 0 / 0.3);
+    overflow: hidden;
     z-index: 40;
   }
   /* The deck is focusable (tabindex=-1) only so keyboard focus can rest on a
@@ -118,15 +149,62 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     outline: none;
   }
 
-  /* Entering the deck feels like a mode rising over the site. Runs once on
-     load; a client-side section change never reinserts .deck, so it never
-     replays. (Exit is handled by a View Transition — see the is:global block.) */
-  @keyframes deck-enter {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+  /* Presenting: the drawer becomes an edge-to-edge immersive surface. */
+  .deck:fullscreen {
+    inset: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
+
+  /* Grabber handle at the top of the drawer — also a dismiss control, so it
+     doubles as both the "this is draggable" cue and a click target. Reset
+     button styling and expand the hit area well past the visible bar. */
+  .deck-grabber {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3.5rem;
+    height: 1.5rem;
+    appearance: none;
+    border: none;
+    padding: 0;
+    background: none;
+    cursor: grab;
+    touch-action: none;
+    z-index: 11;
+  }
+  .deck-grabber:active {
+    cursor: grabbing;
+  }
+  .deck-grabber::after {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.25rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background: #d1d5db;
+    transition: background 0.12s ease;
+  }
+  .deck-grabber:hover::after {
+    background: #9ca3af;
+  }
+  .deck:fullscreen .deck-grabber {
+    display: none;
+  }
+
+  /* Entering the deck feels like a drawer rising from the bottom. This covers
+     a DIRECT load of a /work/<slug> route (no view transition). When you arrive
+     via the client router (from /work), the slide-up is driven by the VT pseudo
+     instead — see page-transitions.css — because the transition masks this
+     mount animation. Both reuse the `deck-slide-in` keyframe defined there
+     (page-transitions.css is bundled into every page, so it's always present).
+     Exit is likewise handled there. */
   .deck {
-    animation: deck-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: deck-slide-in 0.42s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   /* --- Slide stage --- */
@@ -157,6 +235,8 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     max-width: 52rem;
     max-height: 100%;
     overflow-y: auto;
+    /* Don't chain scroll to the page when a long slide hits its end. */
+    overscroll-behavior: contain;
   }
 
   /* --- Slide controls, bottom-center --- */
@@ -203,13 +283,6 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     min-width: 3.5rem;
     text-align: center;
   }
-  .deck-controls-sep {
-    width: 1px;
-    height: 1.25rem;
-    background: #e5e7eb;
-    margin: 0 0.25rem;
-  }
-
   /* --- Table of contents (Notion-style: bars at rest, list on hover) --- */
   .deck-toc {
     position: absolute;
@@ -308,8 +381,20 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
 
   @media (prefers-reduced-motion: reduce) {
     .deck { animation: none; }
+    .deck-scrim { animation: none; }
     .deck-slide { transition: none; }
     .deck-chrome { transition: none; }
+  }
+</style>
+
+<style is:global>
+  /* The deck is a fixed overlay with no page scroll, so BaseLayout's
+     `scrollbar-gutter: stable` (which permanently reserves gutter space on
+     <html>) just leaves a strip of page background peeking past the scrim on
+     the right. Reclaim it on deck routes only. */
+  html:has(.deck) {
+    scrollbar-gutter: auto;
+    overflow: hidden;
   }
 </style>
 
@@ -319,6 +404,7 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
 
 <script>
   import { navigate } from 'astro:transitions/client';
+  import { prefetch } from 'astro:prefetch';
   import { suppressNextReveal } from '@/lib/transitions';
 
   function initDeck() {
@@ -327,13 +413,17 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
 
     const slides = Array.from(deck.querySelectorAll<HTMLElement>('.deck-slide'));
     if (!slides.length) return;
+
+    // Exit is a programmatic navigate('/work') — not a hoverable link — so warm
+    // its HTML now, so closing the drawer starts its transition instantly.
+    prefetch('/work');
     const tocBars = Array.from(deck.querySelectorAll<HTMLElement>('.deck-toc-bar'));
     const tocLinks = Array.from(deck.querySelectorAll<HTMLElement>('.deck-toc-link'));
     const counter = deck.querySelector<HTMLElement>('[data-counter]');
     const prevBtn = deck.querySelector<HTMLButtonElement>('[data-prev]');
     const nextBtn = deck.querySelector<HTMLButtonElement>('[data-next]');
-    const fsBtn = deck.querySelector<HTMLButtonElement>('[data-fullscreen]');
-    const exitLink = deck.querySelector<HTMLAnchorElement>('[data-exit]');
+    const scrim = document.querySelector<HTMLElement>('[data-scrim]');
+    const grabber = deck.querySelector<HTMLButtonElement>('[data-grabber]');
 
     // One controller tears down every listener together on navigation away
     // (the AbortController convention used across the site — see SectionRail,
@@ -347,7 +437,7 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     // slide belongs to, each section's slide elements/start index/size, and
     // its route.
     const sectionOf = slides.map((s) => Number(s.dataset.section));
-    const sectionHref = tocLinks.map((l) => l.dataset.href || '/portfolio');
+    const sectionHref = tocLinks.map((l) => l.dataset.href!);
     const sectionSlides: HTMLElement[][] = [];
     const sectionStart: number[] = [];
     slides.forEach((s, i) => {
@@ -434,8 +524,8 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     // Browser back/forward: the URL names a section → jump to its first slide
     // without pushing again.
     window.addEventListener('popstate', () => {
-      const path = location.pathname.replace(/\/$/, '') || '/portfolio';
-      const sec = sectionHref.findIndex((h) => (h.replace(/\/$/, '') || '/portfolio') === path);
+      const path = location.pathname.replace(/\/$/, '');
+      const sec = sectionHref.findIndex((h) => h.replace(/\/$/, '') === path);
       if (sec >= 0) show(sectionStart[sec], false);
     }, { signal });
 
@@ -465,9 +555,8 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     // drop-down animation to this element; suppressNextReveal() tells /work
     // not to replay its entry reveal, so it reads as if it were always there.
     function exitDeck() {
-      const href = exitLink?.getAttribute('href') ?? '/work';
       suppressNextReveal();
-      navigate(href);
+      navigate('/work');
     }
 
     // --- Keyboard ---
@@ -502,18 +591,120 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
       if (Math.abs(dx) > 50) show(index + (dx < 0 ? 1 : -1));
     }, { passive: true, signal });
 
-    // --- Fullscreen (present mode for interviews) ---
-    fsBtn?.addEventListener('click', () => {
-      if (document.fullscreenElement) document.exitFullscreen();
-      else deck.requestFullscreen?.();
-      // Don't leave focus (and a focus ring) parked on the button afterward.
-      fsBtn.blur();
+    // Enter present mode. Exit is always via Escape (see the keydown handler).
+    const presentFullscreen = () => deck.requestFullscreen?.();
+
+    // --- Click the dimmed strip above the drawer to close ---
+    scrim?.addEventListener('click', () => exitDeck(), { signal });
+
+    // --- Grabber: a bidirectional handle ---
+    // Click (or Enter/Space) or flick UP to present in fullscreen — the up-drag
+    // has little travel (the drawer sits only a couple rem from the top), so the
+    // click reinforces that intent. Drag DOWN to dismiss (proportional, lots of
+    // travel). Dismiss is still fully covered by the scrim and Escape. All of
+    // this is off in fullscreen, where the grabber is hidden anyway.
+    const DISMISS_RATIO = 0.25;   // down: fraction of viewport height to close
+    const PRESENT_UP = 24;        // up: px past the gap to enter fullscreen
+    const FLICK_VELOCITY = 0.5;   // px/ms — a quick flick commits either way
+    let dragging = false;
+    let moved = false;
+    let suppressClick = false;
+    let startY = 0;
+    let startT = 0;
+    let gapPx = 0;                // the top gap at drag start (upward travel room)
+    let delta = 0;               // signed: + down, − up
+
+    const dragTo = (dy: number) => {
+      delta = dy;
+      let ty: number;
+      if (dy >= 0) {
+        ty = dy; // down: 1:1
+        if (scrim) scrim.style.opacity = String(1 - Math.min(dy / window.innerHeight, 1) * 0.6);
+      } else {
+        // up: follow to the top edge, then rubber-band with resistance
+        const up = -dy;
+        ty = -(Math.min(up, gapPx) + Math.max(0, up - gapPx) * 0.15);
+      }
+      deck.style.transform = `translateY(${ty}px)`;
+    };
+    const snapBack = () => {
+      deck.style.transition = 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)';
+      deck.style.transform = '';
+      if (scrim) { scrim.style.transition = 'opacity 0.28s ease'; scrim.style.opacity = ''; }
+      deck.addEventListener('transitionend', () => {
+        deck.style.transition = '';
+        if (scrim) scrim.style.transition = '';
+      }, { once: true });
+    };
+
+    grabber?.addEventListener('pointerdown', (e) => {
+      if (document.fullscreenElement) return;
+      dragging = true;
+      moved = false;
+      startY = e.clientY;
+      startT = performance.now();
+      delta = 0;
+      gapPx = deck.getBoundingClientRect().top; // upward room = the top gap
+      deck.style.transition = 'none';
+      grabber.setPointerCapture(e.pointerId);
     }, { signal });
 
-    // --- Exit link: animate out instead of an instant jump ---
-    exitLink?.addEventListener('click', (e) => {
-      e.preventDefault();
-      exitDeck();
+    grabber?.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      if (Math.abs(e.clientY - startY) > 3) moved = true;
+      dragTo(e.clientY - startY);
+    }, { signal });
+
+    grabber?.addEventListener('pointerup', (e) => {
+      if (!dragging) return;
+      dragging = false;
+      grabber.releasePointerCapture(e.pointerId);
+      if (!moved) return; // a tap — let the click handler present
+      suppressClick = true; // it was a drag, not a click
+      const velocity = delta / (performance.now() - startT); // signed px/ms
+      if (delta > 0 && (delta > window.innerHeight * DISMISS_RATIO || velocity > FLICK_VELOCITY)) {
+        exitDeck();
+      } else if (delta < 0 && (-delta > PRESENT_UP || -velocity > FLICK_VELOCITY)) {
+        // Clear the drag transform first (transition is already 'none' from
+        // pointerdown, so this is instant) so fullscreen isn't offset, then
+        // request it synchronously — pointerup is a valid user gesture.
+        deck.style.transform = '';
+        if (scrim) scrim.style.opacity = '';
+        presentFullscreen();
+      } else {
+        snapBack();
+      }
+    }, { signal });
+
+    grabber?.addEventListener('pointercancel', () => {
+      if (!dragging) return;
+      dragging = false;
+      if (moved) snapBack();
+    }, { signal });
+
+    // Tap / keyboard activation presents; a drag already handled it above.
+    grabber?.addEventListener('click', () => {
+      if (suppressClick) { suppressClick = false; return; }
+      presentFullscreen();
+    }, { signal });
+
+    // --- Focus trap: keep Tab within the drawer while it's open (aria-modal) ---
+    deck.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(
+        deck.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')
+      ).filter((el) => el.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === deck)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }, { signal });
 
     // Tear every listener down together on navigation away.
