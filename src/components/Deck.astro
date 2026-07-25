@@ -44,8 +44,12 @@ const initialIndex = sectionStarts[initialSection] ?? 0;
 const initialCount = projects[initialSection]?.slides.length ?? 0;
 ---
 
-<!-- Dimmed strip left above the drawer. Clicking it closes back to /work. -->
-<button class="deck-scrim" type="button" data-scrim aria-label="Close"></button>
+<!-- Dimmed strip left above the drawer. Clicking it closes back to /work.
+     transition:name so its fade is driven by the VT pseudo (see
+     page-transitions.css) during a client-router navigation — otherwise it's
+     swept into the anonymous "root" content, whose transition is disabled
+     site-wide, and the fade-in keyframe below never gets to play. -->
+<button class="deck-scrim" type="button" data-scrim aria-label="Close" transition:name="scrim"></button>
 
 <div
   class="deck"
@@ -122,11 +126,10 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     background: rgb(10 10 10 / 0.38);
     cursor: pointer;
     z-index: 39;
-    animation: deck-scrim-in 0.42s ease both;
-  }
-  @keyframes deck-scrim-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    /* Reuses the global `scrim-fade-in` keyframe (page-transitions.css, bundled
+       into every page) — the same share the drawer does with `deck-slide-in`,
+       so the direct-load mount and the VT-driven fade stay in lockstep. */
+    animation: scrim-fade-in var(--drawer-dur) var(--drawer-ease) both;
   }
 
   /* The deck is a bottom drawer: flush to the sides and bottom, stopping short
@@ -204,7 +207,15 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
      (page-transitions.css is bundled into every page, so it's always present).
      Exit is likewise handled there. */
   .deck {
-    animation: deck-slide-in 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: deck-slide-in var(--drawer-dur) var(--drawer-ease);
+  }
+  /* Intra-deck navigation (deck → deck via browser back/forward): the drawer is
+     already up. Suppress the mount slide-up on the freshly-swapped element — and
+     the scrim's re-fade — so only the slide underneath changes. Pairs with the
+     VT-pseudo suppression in page-transitions.css (both keyed off deck-intra). */
+  :global(html.deck-intra) .deck,
+  :global(html.deck-intra) .deck-scrim {
+    animation: none;
   }
 
   /* --- Slide stage --- */
@@ -475,6 +486,14 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
       loadSection(sec + 1);
     }
 
+    // The counter text is a pure function of the current index, so recompute it
+    // on demand rather than caching a string — no stale value to keep in sync.
+    function renderCounter() {
+      if (!counter) return;
+      const sec = sectionOf[index];
+      counter.textContent = `${index - sectionStart[sec] + 1} / ${sectionSlides[sec].length}`;
+    }
+
     // Paint the current index/section, touching only what actually changed
     // (the previous and new active slide/toc entry) rather than rescanning
     // every slide and toc item on every navigation.
@@ -489,7 +508,14 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
         tocBars[sec]?.classList.add('is-active');
         tocLinks[sec]?.classList.add('is-active');
       }
-      if (counter) counter.textContent = `${index - sectionStart[sec] + 1} / ${sectionSlides[sec].length}`;
+      // While the chrome is hidden/fading (fullscreen presenting), skip the
+      // counter write: the fade-out takes ~0.45s, so navigating again before it
+      // finishes would otherwise swap the digits while they're still legible — a
+      // visible flick. showChrome() recomputes and writes the current value when
+      // the chrome returns (mousemove), so it's never wrong, just not updated
+      // mid-fade. This is event-driven off the actual visibility state, not a
+      // timer guessing the fade duration, so it can't drift if that ever changes.
+      if (!deck.classList.contains('is-focused')) renderCounter();
       if (prevBtn) prevBtn.disabled = index === 0;
       if (nextBtn) nextBtn.disabled = index === total - 1;
       prevIndex = index;
@@ -537,7 +563,12 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
       deck.classList.add('is-focused');
       deck.focus({ preventScroll: true });
     };
-    const showChrome = () => deck.classList.remove('is-focused');
+    const showChrome = () => {
+      deck.classList.remove('is-focused');
+      // Flush the counter to the current slide — render() skipped it while the
+      // chrome was fading, so it may be a navigation or two behind.
+      renderCounter();
+    };
     // Any pointer movement brings the chrome back. Guarded so it touches the
     // DOM only when chrome is hidden.
     deck.addEventListener('mousemove', () => {
@@ -563,12 +594,16 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();
-        show(index + 1);
+        // Hide BEFORE navigating: render()'s counter write checks is-focused,
+        // so this ordering means even the very first press (chrome still
+        // visible) defers the write instead of flashing the new number before
+        // the fade starts.
         focusOnNav();
+        show(index + 1);
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault();
-        show(index - 1);
         focusOnNav();
+        show(index - 1);
       } else if (e.key === 'Escape') {
         // Back out one level: leave fullscreen, else exit the deck (→ /work).
         if (document.fullscreenElement) document.exitFullscreen();
@@ -628,9 +663,9 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
       deck.style.transform = `translateY(${ty}px)`;
     };
     const snapBack = () => {
-      deck.style.transition = 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)';
+      deck.style.transition = 'transform var(--drawer-dur) var(--drawer-ease)';
       deck.style.transform = '';
-      if (scrim) { scrim.style.transition = 'opacity 0.28s ease'; scrim.style.opacity = ''; }
+      if (scrim) { scrim.style.transition = 'opacity var(--drawer-dur) var(--drawer-ease)'; scrim.style.opacity = ''; }
       deck.addEventListener('transitionend', () => {
         deck.style.transition = '';
         if (scrim) scrim.style.transition = '';

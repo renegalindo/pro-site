@@ -272,6 +272,30 @@ const contentTopPadding = showPageHeader
       }
 
       document.addEventListener('astro:page-load', runContentStagger);
+
+      // Tag the drawer-open transition when /work was scrolled at click time, so
+      // its backdrop dissolves rather than pops (see page-transitions.css). CSS
+      // can't read the outgoing page's scroll, so we capture it here — before
+      // the swap, while still on /work — and mark <html> after the swap, in time
+      // for the view-transition pseudo styles to resolve. Registered once.
+      const DECK_PATH = /^\/work\/.+/;
+      let deckFromScrolled = false;
+      let deckIntra = false;
+      document.addEventListener('astro:before-preparation', (e) => {
+        const from = (e as { from?: URL }).from?.pathname ?? '';
+        const to = (e as { to?: URL }).to?.pathname ?? '';
+        const toIsDeck = DECK_PATH.test(to);
+        deckFromScrolled = toIsDeck && window.scrollY > 0;
+        // Moving between two deck routes (browser back/forward across sections):
+        // the drawer is already up and stays up — only the slide underneath
+        // swaps. Tag it so page-transitions.css holds every drawer-motion
+        // animation still, instead of replaying the open slide-up each time.
+        deckIntra = DECK_PATH.test(from) && toIsDeck;
+      });
+      document.addEventListener('astro:after-swap', () => {
+        document.documentElement.classList.toggle('deck-from-scrolled', deckFromScrolled);
+        document.documentElement.classList.toggle('deck-intra', deckIntra);
+      });
     </script>
   </body>
 </html>

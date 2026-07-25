@@ -33,9 +33,24 @@ const deckUrl = '/work/intro';
 
     <a
       href={deckUrl}
-      class="-ml-px inline-flex w-fit items-center rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-900 no-underline transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300"
+      class="-ml-px inline-flex w-fit items-center gap-1.5 rounded-lg bg-zinc-900 px-3.5 py-2 text-sm font-medium text-white no-underline transition-colors hover:bg-zinc-800 hover:text-white active:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
     >
       Take a look
+      <svg
+        class="text-zinc-400"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M7 17 17 7" />
+        <path d="M7 7h10v10" />
+      </svg>
     </a>
 
     {sections.map((section) => (

@@ -16,6 +16,18 @@
    `deck-enter` CSS mount animation, which the transition snapshots over and
    masks, making the deck pop in instead of slide. (Deck.astro's `deck-enter`
    still covers the no-transition path: a direct load of a /work/<slug> route.) */
+/* Drawer motion, one source of truth for every moment the drawer moves (here
+   and in Deck.astro). Enter and exit use OPPOSITE easings on purpose:
+   - Arrivals (open, scrim fade-in, drag snap-back) DECELERATE into place —
+     iOS's Sheet curve (Ionic/Vaul), 500ms ease-out.
+   - Departures (close) ACCELERATE away — a faster ease-in, so a dismiss leaves
+     with momentum and gets out of the way rather than lingering. */
+:root {
+  --drawer-dur: 0.45s;
+  --drawer-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --drawer-exit-dur: 0.31s;
+  --drawer-exit-ease: cubic-bezier(0.4, 0, 1, 1);
+}
 @keyframes deck-slide-off {
   to { transform: translateY(100%); }
 }
@@ -24,16 +36,95 @@
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
-::view-transition-group(deck) { z-index: 1; }
+/* Paint order for the open transition: work (root) < scrim < drawer. */
+::view-transition-group(scrim) { z-index: 1; }
+::view-transition-group(deck) { z-index: 2; }
 ::view-transition-old(deck) {
-  animation: deck-slide-off 0.34s cubic-bezier(0.4, 0, 1, 1) forwards;
+  animation: deck-slide-off var(--drawer-exit-dur) var(--drawer-exit-ease) forwards;
 }
 ::view-transition-new(deck) {
-  animation: deck-slide-in 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: deck-slide-in var(--drawer-dur) var(--drawer-ease);
+}
+/* The dimmed scrim (see Deck.astro, transition:name="scrim"): fades in/out in
+   step with the drawer's own arrival/departure timing, for the same reason the
+   drawer's slide needs the VT pseudo — its own CSS keyframe would otherwise be
+   masked mid-transition. */
+@keyframes scrim-fade-in {
+  from { opacity: 0; }
+}
+@keyframes scrim-fade-out {
+  to { opacity: 0; }
+}
+::view-transition-old(scrim) {
+  animation: scrim-fade-out var(--drawer-exit-dur) var(--drawer-exit-ease) forwards;
+}
+::view-transition-new(scrim) {
+  animation: scrim-fade-in var(--drawer-dur) var(--drawer-ease);
+}
+
+/* Keep the /work page visible behind the drawer as it rises (open only). The
+   site-wide rule (BaseLayout) swaps `root` instantly, so the outgoing /work
+   snapshot vanishes at once. Scoped to the open transition — `html:has(.deck)`
+   only matches after the swap INTO a deck route, never on exit back to /work —
+   we instead HOLD the /work snapshot in place for the drawer's rise and keep
+   the incoming (blank) deck background hidden, so the scrim dims the real work
+   page while the drawer climbs over it. It's a frozen snapshot, alive only for
+   the transition; when the drawer settles it hands off to the real (blank)
+   background under the now-full scrim. */
+@keyframes vt-hold { from, to { opacity: 1; } }
+@keyframes vt-hidden { from, to { opacity: 0; } }
+/* When /work was SCROLLED at open time, its fixed header has shrunk out of the
+   drawer's top strip, so real content sits there — a hard cut to blank at
+   settle would pop. Dissolve the snapshot over the last third of the rise so it
+   melts away instead. Unscrolled, the strip is the (full-height) header ≈ blank,
+   so the seam is invisible and we keep the solid hold. `.deck-from-scrolled` is
+   set on <html> for the open transition by BaseLayout, from /work's scrollY. */
+@keyframes vt-hold-fade { 0%, 33% { opacity: 1; } 100% { opacity: 0; } }
+html:has(.deck)::view-transition-old(root) {
+  animation: vt-hold var(--drawer-dur) linear;
+}
+html.deck-from-scrolled:has(.deck)::view-transition-old(root) {
+  animation: vt-hold-fade var(--drawer-dur) linear;
+}
+html:has(.deck)::view-transition-new(root) {
+  animation: vt-hidden var(--drawer-dur) linear;
+}
+/* Intra-deck navigation (deck → deck, e.g. browser back/forward across
+   sections): the drawer is already up and stays up — only the slide underneath
+   swaps. Hold every drawer-motion animation still (the deck/scrim VT pseudos
+   AND the held root snapshot) so nothing slides; the root swap is instant
+   site-wide anyway, so the deck reads as one continuous surface while its
+   content changes. `html.deck-intra` is set for exactly these transitions by
+   BaseLayout. The `.deck`/`.deck-scrim` mount animations on the freshly-swapped
+   elements are suppressed alongside these in Deck.astro. */
+html.deck-intra::view-transition-new(deck),
+html.deck-intra::view-transition-new(scrim),
+html.deck-intra:has(.deck)::view-transition-old(root),
+html.deck-intra:has(.deck)::view-transition-new(root) {
+  animation: none;
+}
+/* Hold every outgoing snapshot at zero opacity so exactly ONE copy of each
+   surface shows for the whole transition. Holding both the old and new snapshot
+   visible instead stacks them, and any semi-transparent pixel then doubles up
+   and darkens until the old one is dropped at the end — a visible pulse. Two
+   spots reveal this: the translucent scrim strip, and the drawer's soft upward
+   box-shadow bleeding into that strip (its body is opaque, so only the shadow
+   doubles). The incoming snapshot is opaque/identical in position, so dropping
+   the outgoing one is seamless. (Root is opaque and unchanged, so its held
+   pair is invisible either way — left as-is above.) */
+html.deck-intra::view-transition-old(scrim),
+html.deck-intra::view-transition-old(deck) {
+  animation: none;
+  opacity: 0;
 }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(deck),
-  ::view-transition-new(deck) {
+  ::view-transition-new(deck),
+  ::view-transition-old(scrim),
+  ::view-transition-new(scrim),
+  html:has(.deck)::view-transition-old(root),
+  html.deck-from-scrolled:has(.deck)::view-transition-old(root),
+  html:has(.deck)::view-transition-new(root) {
     animation: none;
   }
 }
