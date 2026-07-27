@@ -1,0 +1,130 @@
+---
+// Renders one portfolio slide from its parsed content. Layout is programmatic:
+// the component decides placement from which fields are present and (for images)
+// from the media's aspect ratio — landscape stacks text above media, portrait
+// sets media beside the text. See src/lib/portfolio.ts for the content model.
+//
+// Images carry their URL in `data-src`, not `src`: the deck loads them a section
+// at a time (current ± 1) and sets `data-orientation` once each one reports its
+// natural size — so a 100-slide deck never fetches more than a few images ahead.
+import type { Slide } from '@/lib/portfolio';
+
+interface Props {
+  slide: Slide;
+}
+
+const { slide } = Astro.props;
+const { heading, subheading, description, media, caption } = slide;
+const hasText = !!(heading || subheading || description);
+---
+
+<div class="slide">
+  {hasText && (
+    <div class="slide-text">
+      {heading && <h2 class="slide-heading">{heading}</h2>}
+      {subheading && <h3 class="slide-subheading">{subheading}</h3>}
+      {description && <p class="slide-description">{description}</p>}
+    </div>
+  )}
+
+  {media && (
+    <figure class="slide-media">
+      <div class="slide-frame">
+        {media.type === 'image' && (
+          <img data-src={media.src} alt={media.alt} loading="lazy" data-media-img />
+        )}
+        {media.type === 'video' && (
+          <video src={media.src} controls playsinline class="slide-asset" />
+        )}
+        {media.type === 'youtube' && (
+          <iframe
+            class="slide-asset"
+            src={`https://www.youtube.com/embed/${media.src}`}
+            title={media.alt}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        )}
+      </div>
+      {caption && <figcaption class="slide-caption">{caption}</figcaption>}
+    </figure>
+  )}
+</div>
+
+<style>
+  .slide {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .slide-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .slide-heading {
+    font-size: 1.375rem;
+    font-weight: 500;
+    color: #0a0a0a;
+    line-height: 1.25;
+  }
+
+  .slide-subheading {
+    font-size: 1.0625rem;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .slide-description {
+    color: #374151;
+    line-height: 1.6;
+  }
+
+  .slide-media {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .slide-frame {
+    overflow: hidden;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    background: #f5f5f5;
+  }
+
+  .slide-frame :is(img, .slide-asset) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .slide-asset {
+    aspect-ratio: 16 / 9;
+  }
+
+  .slide-caption {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  /* Portrait media sits beside the text on wider viewports. */
+  @media (min-width: 640px) {
+    .slide[data-orientation='portrait'] {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+    .slide[data-orientation='portrait'] .slide-text {
+      flex: 1;
+      padding-top: 0.5rem;
+    }
+    .slide[data-orientation='portrait'] .slide-media {
+      flex: 0 0 42%;
+    }
+  }
+</style>

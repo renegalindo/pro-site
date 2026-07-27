@@ -1,0 +1,761 @@
+---
+// The portfolio deck: one continuous, client-controlled surface that shows one
+// slide at a time. It is rendered whole on every route (all sections in the
+// DOM) so that moving between projects is a client-side pushState — never a
+// document reload — which keeps browser fullscreen alive across the whole deck.
+//
+// Sections = the intro (at `/work/intro`) followed by one per project (at
+// `/work/<slug>`). The URL names the *section*, never the slide: stepping
+// within a section changes nothing; crossing into another section pushes its
+// URL. `initialSection` decides which section this route boots on.
+//
+// The right-side nav is a Notion-style table of contents of sections (intro
+// included): bars at rest, expanding to a labeled list on hover.
+import Slide from '@/components/Slide.astro';
+import type { Project } from '@/lib/portfolio';
+
+interface Props {
+  projects: Project[];
+  initialSection: number;
+}
+
+const { projects, initialSection } = Astro.props;
+
+// First slide index of each section (a TOC click lands on its first slide).
+const sectionStarts: number[] = [];
+let acc = 0;
+for (const p of projects) {
+  sectionStarts.push(acc);
+  acc += p.slides.length;
+}
+
+// Flatten to one slide sequence; each slide knows its section so the TOC and
+// counter can track the current one.
+const slides = projects.flatMap((p, pi) =>
+  p.slides.map((slide) => ({ slide, section: pi }))
+);
+
+const hrefFor = (p: Project) => `/work/${p.slug}`;
+
+// SSR the initial state so the right slide/section paints before JS boots (and
+// as a no-JS fallback for a shared deep link). Every route boots on its
+// section's first slide, so the counter always starts at 1.
+const initialIndex = sectionStarts[initialSection] ?? 0;
+const initialCount = projects[initialSection]?.slides.length ?? 0;
+---
+
+<!-- Dimmed strip left above the drawer. Clicking it closes back to /work.
+     transition:name so its fade is driven by the VT pseudo (see
+     page-transitions.css) during a client-router navigation — otherwise it's
+     swept into the anonymous "root" content, whose transition is disabled
+     site-wide, and the fade-in keyframe below never gets to play. -->
+<button class="deck-scrim" type="button" data-scrim aria-label="Close" transition:name="scrim"></button>
+
+<div
+  class="deck"
+  id="deck"
+  data-initial={initialIndex}
+  tabindex="-1"
+  transition:name="deck"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Selected work"
+>
+  <!-- Grabber handle — click or flick up to present; drag down to dismiss. -->
+  <button class="deck-grabber deck-chrome" type="button" data-grabber aria-label="Present fullscreen"></button>
+
+  <!-- Table of contents (sections), right — bars at rest, labels on hover.
+       Deliberately NOT .deck-chrome: it stays visible while presenting in
+       fullscreen as a subtle position cue; only the bottom controls fade. -->
+  <nav class="deck-toc" aria-label="Sections">
+    <div class="deck-toc-bars" aria-hidden="true">
+      {projects.map((_, i) => (
+        <span class:list={['deck-toc-bar', i === initialSection && 'is-active']}></span>
+      ))}
+    </div>
+    <ul class="deck-toc-list">
+      {projects.map((p, i) => (
+        <li>
+          <button
+            class:list={['deck-toc-link', i === initialSection && 'is-active']}
+            type="button"
+            data-goto={sectionStarts[i]}
+            data-href={hrefFor(p)}
+          >{p.title}</button>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <!-- Slide stage -->
+  <div class="deck-stage" data-stage>
+    {slides.map((s, i) => (
+      <section
+        class:list={['deck-slide', i === initialIndex && 'is-active']}
+        data-section={s.section}
+      >
+        <div class="deck-slide-inner">
+          <Slide slide={s.slide} />
+        </div>
+      </section>
+    ))}
+  </div>
+
+  <!-- Slide controls (bottom-center) -->
+  <div class="deck-controls deck-chrome">
+    <button class="deck-btn" type="button" data-prev aria-label="Previous slide">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <span class="deck-counter" data-counter>1 / {initialCount}</span>
+    <button class="deck-btn" type="button" data-next aria-label="Next slide">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<style>
+  /* Dimmed backdrop. The drawer stops short of the top, so only a thin strip
+     of this shows — clicking it closes back to /work. A <button>, so it's
+     reachable/actionable via keyboard too; reset its default button styling. */
+  .deck-scrim {
+    position: fixed;
+    inset: 0;
+    appearance: none;
+    border: none;
+    padding: 0;
+    background: rgb(10 10 10 / 0.38);
+    cursor: pointer;
+    z-index: 39;
+    /* Reuses the global `scrim-fade-in` keyframe (page-transitions.css, bundled
+       into every page) — the same share the drawer does with `deck-slide-in`,
+       so the direct-load mount and the VT-driven fade stay in lockstep. */
+    animation: scrim-fade-in var(--drawer-dur) var(--drawer-ease) both;
+  }
+
+  /* The deck is a bottom drawer: flush to the sides and bottom, stopping short
+     of the top so a dimmed strip of /work-space peeks above it. Fixed, so it
+     escapes BaseLayout's constrained <main>. */
+  .deck {
+    position: fixed;
+    inset: 2rem 0 0 0;
+    background: #fafafa;
+    color: #0a0a0a;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -8px 40px -12px rgb(0 0 0 / 0.3);
+    overflow: hidden;
+    z-index: 40;
+  }
+  /* The deck is focusable (tabindex=-1) only so keyboard focus can rest on a
+     neutral surface while presenting — never show a ring on it. */
+  .deck:focus,
+  .deck:focus-visible {
+    outline: none;
+  }
+
+  /* Presenting: the drawer becomes an edge-to-edge immersive surface. */
+  .deck:fullscreen {
+    inset: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Grabber handle at the top of the drawer — also a dismiss control, so it
+     doubles as both the "this is draggable" cue and a click target. Reset
+     button styling and expand the hit area well past the visible bar. */
+  .deck-grabber {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3.5rem;
+    height: 1.5rem;
+    appearance: none;
+    border: none;
+    padding: 0;
+    background: none;
+    cursor: grab;
+    touch-action: none;
+    z-index: 11;
+  }
+  .deck-grabber:active {
+    cursor: grabbing;
+  }
+  .deck-grabber::after {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.25rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background: #d1d5db;
+    transition: background 0.12s ease;
+  }
+  .deck-grabber:hover::after {
+    background: #9ca3af;
+  }
+  .deck:fullscreen .deck-grabber {
+    display: none;
+  }
+
+  /* Entering the deck feels like a drawer rising from the bottom. This covers
+     a DIRECT load of a /work/<slug> route (no view transition). When you arrive
+     via the client router (from /work), the slide-up is driven by the VT pseudo
+     instead — see page-transitions.css — because the transition masks this
+     mount animation. Both reuse the `deck-slide-in` keyframe defined there
+     (page-transitions.css is bundled into every page, so it's always present).
+     Exit is likewise handled there. */
+  .deck {
+    animation: deck-slide-in var(--drawer-dur) var(--drawer-ease);
+  }
+  /* Intra-deck navigation (deck → deck via browser back/forward): the drawer is
+     already up. Suppress the mount slide-up on the freshly-swapped element — and
+     the scrim's re-fade — so only the slide underneath changes. Pairs with the
+     VT-pseudo suppression in page-transitions.css (both keyed off deck-intra). */
+  :global(html.deck-intra) .deck,
+  :global(html.deck-intra) .deck-scrim {
+    animation: none;
+  }
+
+  /* --- Slide stage --- */
+  .deck-stage {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 4.5rem 6rem 6rem;
+  }
+
+  .deck-slide {
+    position: absolute;
+    inset: 4.5rem 6rem 6rem;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease;
+  }
+  .deck-slide.is-active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .deck-slide-inner {
+    width: 100%;
+    max-width: 52rem;
+    max-height: 100%;
+    overflow-y: auto;
+    /* Don't chain scroll to the page when a long slide hits its end. */
+    overscroll-behavior: contain;
+  }
+
+  /* --- Slide controls, bottom-center --- */
+  .deck-controls {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.5rem;
+    background: rgb(255 255 255 / 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    box-shadow: 0 6px 20px -8px rgb(0 0 0 / 0.15);
+    z-index: 10;
+  }
+  .deck-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    color: #4b5563;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .deck-btn:hover {
+    background: #f0f0f0;
+    color: #0a0a0a;
+  }
+  .deck-btn:disabled {
+    color: #d1d5db;
+    cursor: default;
+    background: none;
+  }
+  .deck-counter {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    font-variant-numeric: tabular-nums;
+    padding: 0 0.5rem;
+    min-width: 3.5rem;
+    text-align: center;
+  }
+  /* --- Table of contents (Notion-style: bars at rest, list on hover) --- */
+  .deck-toc {
+    position: absolute;
+    top: 50%;
+    right: 1.75rem;
+    transform: translateY(-50%);
+    z-index: 10;
+  }
+  /* Resting bars — one per section, right-aligned. */
+  .deck-toc-bars {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    transition: opacity 0.15s ease;
+  }
+  .deck-toc-bar {
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
+    background: #d1d5db;
+    transition: width 0.16s ease, background 0.16s ease;
+  }
+  .deck-toc-bar.is-active {
+    width: 24px;
+    background: #0a0a0a;
+  }
+  /* Hover panel — the labeled list, anchored to the same right edge. Slides in
+     from the right (starts nudged right of its resting spot, settles left) as
+     it fades up, rather than snapping. The X offset rides on top of the
+     translateY(-50%) that vertically centers it, so both live in one transform.  */
+  .deck-toc-list {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translate(0.5rem, -50%);
+    min-width: 11rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+    padding: 0.5rem;
+    background: #fff;
+    /* Outline matched to the deck's bottom nav controls (.deck-controls): a
+       single #e5e7eb border, no hairline ring. This intentionally steps out of
+       the shared popover elevation used by SectionRail/ContactMenu (which carry
+       a `0 0 0 1px` ring and no border) so the deck's two control surfaces — the
+       TOC here and the bottom controls — read as a matched pair. Drop shadow
+       kept a touch softer/deeper than the controls' since this is a taller panel. */
+    border: 1px solid #e5e7eb;
+    border-radius: 0.625rem;
+    box-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.12), 0 2px 6px -2px rgb(0 0 0 / 0.05);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .deck-toc:hover .deck-toc-bars {
+    opacity: 0;
+  }
+  .deck-toc:hover .deck-toc-list {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(0, -50%);
+  }
+  .deck-toc-link {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.3125rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+    white-space: nowrap;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .deck-toc-link:hover {
+    background: #f5f5f5;
+    color: #0a0a0a;
+  }
+  .deck-toc-link.is-active {
+    color: #0a0a0a;
+    font-weight: 500;
+  }
+
+  /* --- Presentation focus (fullscreen only) --- */
+  /* While presenting in fullscreen, arrow navigation softly hides the chrome
+     (toc + controls); any mouse move brings it back. Windowed, this class is
+     never applied, so everything stays visible. The cursor is never hidden. */
+  .deck-chrome {
+    transition: opacity 0.45s ease;
+  }
+  .deck.is-focused .deck-chrome {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 639.98px) {
+    .deck-stage,
+    .deck-slide {
+      inset: 4rem 1.25rem 5rem;
+      padding: 0;
+    }
+    .deck-toc { right: 0.75rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .deck { animation: none; }
+    .deck-scrim { animation: none; }
+    .deck-slide { transition: none; }
+    .deck-chrome { transition: none; }
+    /* Fade only — no horizontal slide. Neutralize the resting X offset so the
+       panel simply appears in place. */
+    .deck-toc-list { transform: translateY(-50%); transition: opacity 0.15s ease; }
+  }
+</style>
+
+<style is:global>
+  /* The deck is a fixed overlay with no page scroll, so BaseLayout's
+     `scrollbar-gutter: stable` (which permanently reserves gutter space on
+     <html>) just leaves a strip of page background peeking past the scrim on
+     the right. Reclaim it on deck routes only. */
+  html:has(.deck) {
+    scrollbar-gutter: auto;
+    overflow: hidden;
+  }
+</style>
+
+<!-- The deck's exit/entry view-transition rules (::view-transition-*(deck))
+     live in src/styles/page-transitions.css (imported by BaseLayout), NOT
+     here — see that file for why. -->
+
+<script>
+  import { navigate } from 'astro:transitions/client';
+  import { prefetch } from 'astro:prefetch';
+  import { suppressNextReveal } from '@/lib/transitions';
+
+  function initDeck() {
+    const deck = document.getElementById('deck');
+    if (!deck) return;
+
+    const slides = Array.from(deck.querySelectorAll<HTMLElement>('.deck-slide'));
+    if (!slides.length) return;
+
+    // Exit is a programmatic navigate('/work') — not a hoverable link — so warm
+    // its HTML now, so closing the drawer starts its transition instantly.
+    prefetch('/work');
+    const tocBars = Array.from(deck.querySelectorAll<HTMLElement>('.deck-toc-bar'));
+    const tocLinks = Array.from(deck.querySelectorAll<HTMLElement>('.deck-toc-link'));
+    const counter = deck.querySelector<HTMLElement>('[data-counter]');
+    const prevBtn = deck.querySelector<HTMLButtonElement>('[data-prev]');
+    const nextBtn = deck.querySelector<HTMLButtonElement>('[data-next]');
+    const scrim = document.querySelector<HTMLElement>('[data-scrim]');
+    const grabber = deck.querySelector<HTMLButtonElement>('[data-grabber]');
+
+    // One controller tears down every listener together on navigation away
+    // (the AbortController convention used across the site — see SectionRail,
+    // ContactMenu, headerScroll).
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    const total = slides.length;
+
+    // Section metadata, built from the DOM in one pass: which section each
+    // slide belongs to, each section's slide elements/start index/size, and
+    // its route.
+    const sectionOf = slides.map((s) => Number(s.dataset.section));
+    const sectionHref = tocLinks.map((l) => l.dataset.href!);
+    const sectionSlides: HTMLElement[][] = [];
+    const sectionStart: number[] = [];
+    slides.forEach((s, i) => {
+      const sec = sectionOf[i];
+      if (!sectionSlides[sec]) {
+        sectionSlides[sec] = [];
+        sectionStart[sec] = i;
+      }
+      sectionSlides[sec].push(s);
+    });
+
+    let index = Number(deck.dataset.initial) || 0;
+    let prevIndex = -1;
+    let prevSection = -1;
+
+    // --- Windowed media loading: only the current section ± 1 ever fetch. ---
+    function loadSection(sec: number) {
+      sectionSlides[sec]?.forEach((s) => {
+        s.querySelectorAll<HTMLImageElement>('img[data-media-img]').forEach((img) => {
+          if (!img.dataset.src || img.src) return;
+          img.src = img.dataset.src;
+          // Flip to the portrait layout once the image reports its natural size
+          // (default renders landscape). Video/YouTube stay 16:9.
+          img.addEventListener('load', () => {
+            if (img.naturalHeight > img.naturalWidth) {
+              img.closest<HTMLElement>('.slide')?.setAttribute('data-orientation', 'portrait');
+            }
+          }, { once: true });
+        });
+      });
+    }
+    function loadWindow(sec: number) {
+      loadSection(sec - 1);
+      loadSection(sec);
+      loadSection(sec + 1);
+    }
+
+    // The counter text is a pure function of the current index, so recompute it
+    // on demand rather than caching a string — no stale value to keep in sync.
+    function renderCounter() {
+      if (!counter) return;
+      const sec = sectionOf[index];
+      counter.textContent = `${index - sectionStart[sec] + 1} / ${sectionSlides[sec].length}`;
+    }
+
+    // Paint the current index/section, touching only what actually changed
+    // (the previous and new active slide/toc entry) rather than rescanning
+    // every slide and toc item on every navigation.
+    function render(sec: number) {
+      if (prevIndex >= 0) slides[prevIndex].classList.remove('is-active');
+      slides[index].classList.add('is-active');
+      if (sec !== prevSection) {
+        if (prevSection >= 0) {
+          tocBars[prevSection]?.classList.remove('is-active');
+          tocLinks[prevSection]?.classList.remove('is-active');
+        }
+        tocBars[sec]?.classList.add('is-active');
+        tocLinks[sec]?.classList.add('is-active');
+      }
+      // While the chrome is hidden/fading (fullscreen presenting), skip the
+      // counter write: the fade-out takes ~0.45s, so navigating again before it
+      // finishes would otherwise swap the digits while they're still legible — a
+      // visible flick. showChrome() recomputes and writes the current value when
+      // the chrome returns (mousemove), so it's never wrong, just not updated
+      // mid-fade. This is event-driven off the actual visibility state, not a
+      // timer guessing the fade duration, so it can't drift if that ever changes.
+      if (!deck.classList.contains('is-focused')) renderCounter();
+      if (prevBtn) prevBtn.disabled = index === 0;
+      if (nextBtn) nextBtn.disabled = index === total - 1;
+      prevIndex = index;
+      prevSection = sec;
+    }
+
+    // Move to a slide. Crossing into another section loads its media window and
+    // (unless we're replaying history) pushes that section's URL — the only
+    // time the address bar changes.
+    function show(next: number, push = true) {
+      index = Math.max(0, Math.min(total - 1, next));
+      const sec = sectionOf[index];
+      const fromSection = prevSection;
+      render(sec);
+      if (sec !== fromSection) {
+        loadWindow(sec);
+        if (push) history.pushState({ sec }, '', sectionHref[sec]);
+      }
+    }
+
+    // Boot: paint initial state and prime the window around it (no push — the
+    // URL is already correct for this route).
+    show(index, false);
+
+    // --- Navigation ---
+    prevBtn?.addEventListener('click', () => show(index - 1), { signal });
+    nextBtn?.addEventListener('click', () => show(index + 1), { signal });
+    tocLinks.forEach((l) =>
+      l.addEventListener('click', () => show(Number(l.dataset.goto)), { signal })
+    );
+
+    // Browser back/forward: the URL names a section → jump to its first slide
+    // without pushing again.
+    window.addEventListener('popstate', () => {
+      const path = location.pathname.replace(/\/$/, '');
+      const sec = sectionHref.findIndex((h) => h.replace(/\/$/, '') === path);
+      if (sec >= 0) show(sectionStart[sec], false);
+    }, { signal });
+
+    // --- Presentation focus (fullscreen only) ---
+    // Moving focus to the deck as the chrome hides keeps focus off the buttons
+    // (which are about to become invisible) so no focus ring lingers on them —
+    // notably the fullscreen button after you've clicked it.
+    const hideChrome = () => {
+      deck.classList.add('is-focused');
+      deck.focus({ preventScroll: true });
+    };
+    const showChrome = () => {
+      deck.classList.remove('is-focused');
+      // Flush the counter to the current slide — render() skipped it while the
+      // chrome was fading, so it may be a navigation or two behind.
+      renderCounter();
+    };
+    // Any pointer movement brings the chrome back. Guarded so it touches the
+    // DOM only when chrome is hidden.
+    deck.addEventListener('mousemove', () => {
+      if (deck.classList.contains('is-focused')) showChrome();
+    }, { signal });
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) showChrome();
+    }, { signal });
+    const focusOnNav = () => { if (document.fullscreenElement) hideChrome(); };
+
+    // Leave for /work by dropping the deck away to reveal it — a client-side
+    // navigation (no reload). The deck's `transition:name="deck"` (set
+    // declaratively in the markup, not via JS — Astro's router resets ad-hoc
+    // inline view-transition-names set right before navigate()) scopes the
+    // drop-down animation to this element; suppressNextReveal() tells /work
+    // not to replay its entry reveal, so it reads as if it were always there.
+    function exitDeck() {
+      suppressNextReveal();
+      navigate('/work');
+    }
+
+    // --- Keyboard ---
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        // Hide BEFORE navigating: render()'s counter write checks is-focused,
+        // so this ordering means even the very first press (chrome still
+        // visible) defers the write instead of flashing the new number before
+        // the fade starts.
+        focusOnNav();
+        show(index + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        focusOnNav();
+        show(index - 1);
+      } else if (e.key === 'Escape') {
+        // Back out one level: leave fullscreen, else exit the deck (→ /work).
+        if (document.fullscreenElement) document.exitFullscreen();
+        else exitDeck();
+      }
+    }, { signal });
+
+    // --- Click stage to advance (ignoring media, links, buttons) ---
+    deck.querySelector('[data-stage]')?.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('a, button, figure, iframe, video')) return;
+      show(index + 1);
+    }, { signal });
+
+    // --- Swipe ---
+    let startX = 0;
+    deck.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true, signal });
+    deck.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 50) show(index + (dx < 0 ? 1 : -1));
+    }, { passive: true, signal });
+
+    // Enter present mode. Exit is always via Escape (see the keydown handler).
+    const presentFullscreen = () => deck.requestFullscreen?.();
+
+    // --- Click the dimmed strip above the drawer to close ---
+    scrim?.addEventListener('click', () => exitDeck(), { signal });
+
+    // --- Grabber: a bidirectional handle ---
+    // Click (or Enter/Space) or flick UP to present in fullscreen — the up-drag
+    // has little travel (the drawer sits only a couple rem from the top), so the
+    // click reinforces that intent. Drag DOWN to dismiss (proportional, lots of
+    // travel). Dismiss is still fully covered by the scrim and Escape. All of
+    // this is off in fullscreen, where the grabber is hidden anyway.
+    const DISMISS_RATIO = 0.25;   // down: fraction of viewport height to close
+    const PRESENT_UP = 24;        // up: px past the gap to enter fullscreen
+    const FLICK_VELOCITY = 0.5;   // px/ms — a quick flick commits either way
+    let dragging = false;
+    let moved = false;
+    let suppressClick = false;
+    let startY = 0;
+    let startT = 0;
+    let gapPx = 0;                // the top gap at drag start (upward travel room)
+    let delta = 0;               // signed: + down, − up
+
+    const dragTo = (dy: number) => {
+      delta = dy;
+      let ty: number;
+      if (dy >= 0) {
+        ty = dy; // down: 1:1
+        if (scrim) scrim.style.opacity = String(1 - Math.min(dy / window.innerHeight, 1) * 0.6);
+      } else {
+        // up: follow to the top edge, then rubber-band with resistance
+        const up = -dy;
+        ty = -(Math.min(up, gapPx) + Math.max(0, up - gapPx) * 0.15);
+      }
+      deck.style.transform = `translateY(${ty}px)`;
+    };
+    const snapBack = () => {
+      deck.style.transition = 'transform var(--drawer-dur) var(--drawer-ease)';
+      deck.style.transform = '';
+      if (scrim) { scrim.style.transition = 'opacity var(--drawer-dur) var(--drawer-ease)'; scrim.style.opacity = ''; }
+      deck.addEventListener('transitionend', () => {
+        deck.style.transition = '';
+        if (scrim) scrim.style.transition = '';
+      }, { once: true });
+    };
+
+    grabber?.addEventListener('pointerdown', (e) => {
+      if (document.fullscreenElement) return;
+      dragging = true;
+      moved = false;
+      startY = e.clientY;
+      startT = performance.now();
+      delta = 0;
+      gapPx = deck.getBoundingClientRect().top; // upward room = the top gap
+      deck.style.transition = 'none';
+      grabber.setPointerCapture(e.pointerId);
+    }, { signal });
+
+    grabber?.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      if (Math.abs(e.clientY - startY) > 3) moved = true;
+      dragTo(e.clientY - startY);
+    }, { signal });
+
+    grabber?.addEventListener('pointerup', (e) => {
+      if (!dragging) return;
+      dragging = false;
+      grabber.releasePointerCapture(e.pointerId);
+      if (!moved) return; // a tap — let the click handler present
+      suppressClick = true; // it was a drag, not a click
+      const velocity = delta / (performance.now() - startT); // signed px/ms
+      if (delta > 0 && (delta > window.innerHeight * DISMISS_RATIO || velocity > FLICK_VELOCITY)) {
+        exitDeck();
+      } else if (delta < 0 && (-delta > PRESENT_UP || -velocity > FLICK_VELOCITY)) {
+        // Clear the drag transform first (transition is already 'none' from
+        // pointerdown, so this is instant) so fullscreen isn't offset, then
+        // request it synchronously — pointerup is a valid user gesture.
+        deck.style.transform = '';
+        if (scrim) scrim.style.opacity = '';
+        presentFullscreen();
+      } else {
+        snapBack();
+      }
+    }, { signal });
+
+    grabber?.addEventListener('pointercancel', () => {
+      if (!dragging) return;
+      dragging = false;
+      if (moved) snapBack();
+    }, { signal });
+
+    // Tap / keyboard activation presents; a drag already handled it above.
+    grabber?.addEventListener('click', () => {
+      if (suppressClick) { suppressClick = false; return; }
+      presentFullscreen();
+    }, { signal });
+
+    // --- Focus trap: keep Tab within the drawer while it's open (aria-modal) ---
+    deck.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(
+        deck.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')
+      ).filter((el) => el.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === deck)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }, { signal });
+
+    // Tear every listener down together on navigation away.
+    document.addEventListener('astro:before-preparation', () => controller.abort(), { once: true });
+  }
+
+  document.addEventListener('astro:page-load', initDeck);
+</script>

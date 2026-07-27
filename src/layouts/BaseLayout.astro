@@ -6,6 +6,7 @@ import Footer from '@/components/Footer.astro';
 import Lightbox from '@/components/Lightbox.astro';
 import SectionRail from '@/components/SectionRail.astro';
 import type { RailItem } from '@/lib/rail';
+import '@/styles/page-transitions.css';
 
 interface Props {
   title: string;
@@ -23,6 +24,11 @@ interface Props {
     label: string;
   };
   rail?: { heading?: string; items: RailItem[] };
+  /** Opt out of the staggered content reveal — for full-screen takeover pages
+      (e.g. the portfolio deck) that aren't a stack of document blocks and own
+      their own entry animation. (Also avoids the reveal's lingering `transform`
+      clobbering the page's own positioning transforms.) */
+  noStagger?: boolean;
 }
 
 const {
@@ -35,6 +41,7 @@ const {
   backLink,
   nextLink,
   rail,
+  noStagger = false,
 } = Astro.props;
 
 const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`;
@@ -203,7 +210,7 @@ const contentTopPadding = showPageHeader
     <div class="min-h-screen flex flex-col">
       <Header hidden={!showNavHeader} />
       {showPageHeader && <PageHeader title={pageTitle!} logo={pageLogo} />}
-      <main class:list={[
+      <main data-no-stagger={noStagger ? '' : undefined} class:list={[
         "flex-1 w-full max-w-2xl mx-auto px-4 pb-24 text-[17px]",
         contentTopPadding,
       ]}>
@@ -219,11 +226,28 @@ const contentTopPadding = showPageHeader
     <Lightbox transition:persist />
 
     <script>
+      import { consumeSuppressNextReveal } from '@/lib/transitions';
+
       // Reveal the main content blocks in a subtle top → bottom cascade on each
       // load/navigation.
       function runContentStagger() {
         const main = document.querySelector('main');
         if (!main) return;
+
+        // The previous page (e.g. the portfolio deck, dropping away to reveal
+        // this one) asked us to skip the reveal — so it reads as if this page
+        // had been sitting there all along.
+        if (consumeSuppressNextReveal()) {
+          main.classList.add('rise-ready');
+          return;
+        }
+
+        // Full-screen takeover pages opt out: reveal main without tagging its
+        // children, so their positioning transforms aren't overridden.
+        if (main.hasAttribute('data-no-stagger')) {
+          main.classList.add('rise-ready');
+          return;
+        }
 
         // Pick the blocks to cascade. Pages either place several blocks
         // directly in <main>, or wrap them in a single container — in that one
@@ -248,6 +272,30 @@ const contentTopPadding = showPageHeader
       }
 
       document.addEventListener('astro:page-load', runContentStagger);
+
+      // Tag the drawer-open transition when /work was scrolled at click time, so
+      // its backdrop dissolves rather than pops (see page-transitions.css). CSS
+      // can't read the outgoing page's scroll, so we capture it here — before
+      // the swap, while still on /work — and mark <html> after the swap, in time
+      // for the view-transition pseudo styles to resolve. Registered once.
+      const DECK_PATH = /^\/work\/.+/;
+      let deckFromScrolled = false;
+      let deckIntra = false;
+      document.addEventListener('astro:before-preparation', (e) => {
+        const from = (e as { from?: URL }).from?.pathname ?? '';
+        const to = (e as { to?: URL }).to?.pathname ?? '';
+        const toIsDeck = DECK_PATH.test(to);
+        deckFromScrolled = toIsDeck && window.scrollY > 0;
+        // Moving between two deck routes (browser back/forward across sections):
+        // the drawer is already up and stays up — only the slide underneath
+        // swaps. Tag it so page-transitions.css holds every drawer-motion
+        // animation still, instead of replaying the open slide-up each time.
+        deckIntra = DECK_PATH.test(from) && toIsDeck;
+      });
+      document.addEventListener('astro:after-swap', () => {
+        document.documentElement.classList.toggle('deck-from-scrolled', deckFromScrolled);
+        document.documentElement.classList.toggle('deck-intra', deckIntra);
+      });
     </script>
   </body>
 </html>

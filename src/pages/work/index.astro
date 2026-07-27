@@ -2,6 +2,9 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
+import { SHOW_PRESENTATION } from '@/config';
+import { parsePortfolio } from '@/lib/portfolio';
+import rawPortfolio from '@/data/portfolio.md?raw';
 
 const work = await getCollection('work');
 const byOrder = (a, b) => a.data.order - b.data.order;
@@ -13,6 +16,20 @@ const sections = [
   { label: 'Companies', items: companies },
   { label: 'Projects', items: sideProjects },
 ];
+
+// Slugs that actually have a deck section, so a presentation link never points
+// at a slide that hasn't been authored yet. Only needed when the deck is shown.
+const deckSlugs = SHOW_PRESENTATION
+  ? new Set(parsePortfolio(rawPortfolio).map((p) => p.slug))
+  : new Set<string>();
+
+// Where a work row points. In presentation mode it opens the deck at its slide
+// (internal, same-tab → the client router runs the drawer transition); other-
+// wise it links straight out to the product (external, new tab).
+const linkFor = (project: (typeof work)[number]) =>
+  SHOW_PRESENTATION && deckSlugs.has(project.slug)
+    ? { href: `/work/${project.slug}`, external: false }
+    : { href: project.data.externalUrl, external: true };
 ---
 
 <BaseLayout title="Work" description="Design work by René Galindo" hideFooter>
@@ -33,14 +50,18 @@ const sections = [
       <section>
         <h2 class="mt-8 mb-2 pb-1 text-base text-gray-500">{section.label}</h2>
         <ul class="flex flex-col gap-4 text-gray-700 sm:gap-2.5 sm:pr-4">
-          {section.items.map((project) => (
-            <ProjectCard
-              title={project.data.title}
-              year={project.data.year}
-              logo={project.data.logo}
-              externalUrl={project.data.externalUrl}
-            />
-          ))}
+          {section.items.map((project) => {
+            const link = linkFor(project);
+            return (
+              <ProjectCard
+                title={project.data.title}
+                year={project.data.year}
+                logo={project.data.logo}
+                href={link.href}
+                external={link.external}
+              />
+            );
+          })}
         </ul>
       </section>
     ))}
