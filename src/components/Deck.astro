@@ -321,26 +321,33 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     width: 24px;
     background: #0a0a0a;
   }
-  /* Hover panel — the labeled list, anchored to the same right edge. */
+  /* Hover panel — the labeled list, anchored to the same right edge. Slides in
+     from the right (starts nudged right of its resting spot, settles left) as
+     it fades up, rather than snapping. The X offset rides on top of the
+     translateY(-50%) that vertically centers it, so both live in one transform.  */
   .deck-toc-list {
     position: absolute;
     top: 50%;
     right: 0;
-    transform: translateY(-50%);
+    transform: translate(0.5rem, -50%);
     min-width: 11rem;
     display: flex;
     flex-direction: column;
     gap: 0.0625rem;
     padding: 0.5rem;
     background: #fff;
-    border: 1px solid #eee;
+    /* Outline matched to the deck's bottom nav controls (.deck-controls): a
+       single #e5e7eb border, no hairline ring. This intentionally steps out of
+       the shared popover elevation used by SectionRail/ContactMenu (which carry
+       a `0 0 0 1px` ring and no border) so the deck's two control surfaces — the
+       TOC here and the bottom controls — read as a matched pair. Drop shadow
+       kept a touch softer/deeper than the controls' since this is a taller panel. */
+    border: 1px solid #e5e7eb;
     border-radius: 0.625rem;
-    /* Shared popover-card elevation (matches SectionRail .rail-card and
-       ContactMenu .contact-card) so floating surfaces read as one system. */
-    box-shadow: 0 0 0 1px rgb(10 10 10 / 0.05), 0 8px 24px -6px rgb(0 0 0 / 0.12), 0 2px 6px -2px rgb(0 0 0 / 0.05);
+    box-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.12), 0 2px 6px -2px rgb(0 0 0 / 0.05);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .deck-toc:hover .deck-toc-bars {
     opacity: 0;
@@ -348,6 +355,7 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
   .deck-toc:hover .deck-toc-list {
     opacity: 1;
     pointer-events: auto;
+    transform: translate(0, -50%);
   }
   .deck-toc-link {
     display: block;
@@ -395,6 +403,9 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     .deck-scrim { animation: none; }
     .deck-slide { transition: none; }
     .deck-chrome { transition: none; }
+    /* Fade only — no horizontal slide. Neutralize the resting X offset so the
+       panel simply appears in place. */
+    .deck-toc-list { transform: translateY(-50%); transition: opacity 0.15s ease; }
   }
 </style>
 
