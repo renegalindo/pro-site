@@ -603,7 +603,14 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
 
     // --- Keyboard ---
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      // Cmd/Ctrl+Shift+F toggles fullscreen presenting. Guarded on the modifier
+      // combo so plain typing is untouched; Shift makes e.key 'F', so match
+      // case-insensitively.
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        if (document.fullscreenElement) document.exitFullscreen();
+        else presentFullscreen();
+      } else if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();
         // Hide BEFORE navigating: render()'s counter write checks is-focused,
         // so this ordering means even the very first press (chrome still
