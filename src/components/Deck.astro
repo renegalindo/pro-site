@@ -646,10 +646,12 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     // --- Grabber: a bidirectional handle ---
     // Click (or Enter/Space) or flick UP to present in fullscreen — the up-drag
     // has little travel (the drawer sits only a couple rem from the top), so the
-    // click reinforces that intent. Drag DOWN to dismiss (proportional, lots of
-    // travel). Dismiss is still fully covered by the scrim and Escape. All of
+    // click reinforces that intent. Drag DOWN past a fixed distance (or flick)
+    // to dismiss — an absolute px so a deliberate mouse drag closes it on tall
+    // desktop viewports, where a viewport-fraction threshold was out of reach.
+    // Dismiss is still fully covered by the scrim and Escape. All of
     // this is off in fullscreen, where the grabber is hidden anyway.
-    const DISMISS_RATIO = 0.25;   // down: fraction of viewport height to close
+    const DISMISS_PX = 100;       // down: absolute drag distance to close
     const PRESENT_UP = 24;        // up: px past the gap to enter fullscreen
     const FLICK_VELOCITY = 0.5;   // px/ms — a quick flick commits either way
     let dragging = false;
@@ -708,7 +710,7 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
       if (!moved) return; // a tap — let the click handler present
       suppressClick = true; // it was a drag, not a click
       const velocity = delta / (performance.now() - startT); // signed px/ms
-      if (delta > 0 && (delta > window.innerHeight * DISMISS_RATIO || velocity > FLICK_VELOCITY)) {
+      if (delta > 0 && (delta > DISMISS_PX || velocity > FLICK_VELOCITY)) {
         exitDeck();
       } else if (delta < 0 && (-delta > PRESENT_UP || -velocity > FLICK_VELOCITY)) {
         // Clear the drag transform first (transition is already 'none' from
