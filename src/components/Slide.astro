@@ -16,9 +16,13 @@ interface Props {
 const { slide } = Astro.props;
 const { heading, subheading, description, media, caption } = slide;
 const hasText = !!(heading || subheading || description);
+// A slide with media but no text is presented media-first: the media scales to
+// fill the stage (bounded by width AND height), rather than flowing at a fixed
+// width. Most case-study slides are this shape.
+const mediaOnly = !!media && !hasText;
 ---
 
-<div class="slide">
+<div class="slide" data-media-only={mediaOnly ? '' : undefined}>
   {hasText && (
     <div class="slide-text">
       {heading && <h2 class="slide-heading">{heading}</h2>}
@@ -34,7 +38,14 @@ const hasText = !!(heading || subheading || description);
           <img data-src={media.src} alt={media.alt} loading="lazy" data-media-img />
         )}
         {media.type === 'video' && (
-          <video src={media.src} controls playsinline class="slide-asset" />
+          <video
+            src={media.src}
+            autoplay
+            muted
+            loop
+            playsinline
+            class="slide-asset"
+          />
         )}
         {media.type === 'youtube' && (
           <iframe
@@ -110,6 +121,42 @@ const hasText = !!(heading || subheading || description);
   .slide-caption {
     font-size: 0.875rem;
     color: #6b7280;
+  }
+
+  /* Media-first slide: fill the stage. The figure grows to the available box
+     and the media scales to fit within it (bounded by both width and height),
+     preserving its aspect ratio and staying centered. `min-height: 0` lets the
+     flex children shrink below their intrinsic size so tall media doesn't
+     overflow. The `--media-max-h` fallback keeps media inside the stage's
+     vertical chrome (deck top inset + stage top/bottom insets + caption). */
+  .slide[data-media-only] {
+    height: 100%;
+    justify-content: center;
+    /* Media fills the stage bounds vertically. The subtrahend is the total
+       vertical chrome the stage reserves: deck top inset (2rem) + stage top
+       (3.5rem) + stage bottom (6.5rem) + caption (~2rem). Keep it in sync with
+       the .deck-stage / .deck-slide insets in Deck.astro. */
+    --media-max-h: calc(100vh - 14rem);
+  }
+  .slide[data-media-only] .slide-media {
+    min-height: 0;
+    /* Shrink-wrap the figure to the media and center that block in the stage, so
+       the caption below aligns to the media's left edge rather than centering. */
+    align-self: center;
+    width: fit-content;
+    max-width: 100%;
+  }
+  .slide[data-media-only] .slide-frame {
+    display: flex;
+    min-height: 0;
+    max-width: 100%;
+  }
+  .slide[data-media-only] .slide-frame :is(img, .slide-asset) {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: var(--media-max-h);
+    aspect-ratio: auto;
   }
 
   /* Portrait media sits beside the text on wider viewports. */

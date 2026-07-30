@@ -114,25 +114,13 @@ description: Matching, made playful
 website: https://palamatch.com
 +++
 
-# Palamatch at a glance
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua.
-
-![Overview placeholder](/portfolio/ph-wide.svg)
+![Palamatch product demo](/portfolio/palamatch-demo.mp4)
 *A wide establishing shot of the product.*
 
 ---
 
-# The problem
-
-## What we were really solving
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat.
-
-![Problem placeholder](/portfolio/ph-portrait.svg)
-*A tall screen sits beside the text.*
+![Palamatch landing page](/portfolio/palamatch-landing.webp)
+*The landing page.*
 
 ---
 
@@ -225,13 +213,8 @@ description: Banking for the underbanked
 website: https://www.linkedin.com/company/lana-app
 +++
 
-# Lana at a glance
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua.
-
-![Overview placeholder](/portfolio/ph-wide.svg)
-*A wide establishing shot of the product.*
+![Lana home screen](/portfolio/lana-home.webp)
+*The home screen.*
 
 ---
 

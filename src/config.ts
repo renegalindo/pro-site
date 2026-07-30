@@ -16,4 +16,4 @@
  *       I'd rather not feature the presentation. The /work/<slug> deck routes
  *       still build, so a direct link keeps working — they're just not linked.
  */
-export const SHOW_PRESENTATION = false;
+export const SHOW_PRESENTATION = true;

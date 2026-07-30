@@ -224,17 +224,19 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     inset: 0;
     display: grid;
     place-items: center;
-    padding: 4.5rem 6rem 6rem;
+    padding: 3.5rem 4.5rem 6.5rem;
   }
 
   .deck-slide {
     position: absolute;
-    inset: 4.5rem 6rem 6rem;
+    inset: 3.5rem 4.5rem 6.5rem;
     display: grid;
     place-items: center;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.25s ease;
+    /* TEMP layout guide — shows the slide content bounds. Uncomment to bring back. */
+    /* outline: 1px dashed rgb(10 10 10 / 0.25); */
   }
   .deck-slide.is-active {
     opacity: 1;
@@ -243,7 +245,7 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
 
   .deck-slide-inner {
     width: 100%;
-    max-width: 52rem;
+    max-width: 100%;
     max-height: 100%;
     overflow-y: auto;
     /* Don't chain scroll to the page when a long slide hits its end. */
@@ -259,11 +261,14 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.375rem 0.5rem;
+    /* 3px vertical padding lands the control at a 40px total height
+       (32px buttons + 6px padding + 2px border). */
+    padding: 3px 0.5rem;
     background: rgb(255 255 255 / 0.9);
     backdrop-filter: blur(8px);
     border: 1px solid #e5e7eb;
-    border-radius: 999px;
+    /* Standard site radius — matches the TOC panel it pairs with. */
+    border-radius: 0.625rem;
     box-shadow: 0 6px 20px -8px rgb(0 0 0 / 0.15);
     z-index: 10;
   }
