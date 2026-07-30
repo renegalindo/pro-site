@@ -282,25 +282,13 @@ description: Ride-hailing, redesigned
 website: https://cabify.com
 +++
 
-# Cabify at a glance
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua.
-
-![Overview placeholder](/portfolio/ph-wide.svg)
-*A wide establishing shot of the product.*
+![Cabify app](/portfolio/cabify-app.webp)
+*Cabify is one of the leading ride-hailing apps in Spain and Latin America. I was the second product designer of the company — grew and led the team from 2 to 10+ designers.*
 
 ---
 
-# The problem
-
-## What we were really solving
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat.
-
-![Problem placeholder](/portfolio/ph-portrait.svg)
-*A tall screen sits beside the text.*
+![Movo scooter-sharing app](/portfolio/cabify-movo.webp)
+*Co-designed the scooter-sharing Movo app with Manu Gamero — now integrated back into the Cabify app and brand. It first launched under a separate brand, for fear that taxi drivers would burn them.*
 
 ---
 
@@ -319,13 +307,8 @@ description: Taxis, but civilized
 website: https://www.linkedin.com/company/yaxii
 +++
 
-# Yaxi at a glance
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua.
-
-![Overview placeholder](/portfolio/ph-wide.svg)
-*A wide establishing shot of the product.*
+![Yaxi ride-hailing app](/portfolio/yaxi-app.webp)
+*First ride-hailing app in Mexico (before Uber and Cabify). I was the founding product designer.*
 
 ---
 
