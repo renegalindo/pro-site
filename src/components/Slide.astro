@@ -1,12 +1,16 @@
 ---
-// Renders one portfolio slide from its parsed content. Layout is programmatic:
-// the component decides placement from which fields are present and (for images)
-// from the media's aspect ratio — landscape stacks text above media, portrait
-// sets media beside the text. See src/lib/portfolio.ts for the content model.
+// Renders one portfolio slide: media that scales to fill the stage, with an
+// optional caption beneath it.
+//
+// This is currently the deck's ONLY layout — "media + caption". The content
+// model (src/lib/portfolio.ts) still parses heading/subheading/description, but
+// nothing renders them yet; the other layouts (text beside/above media,
+// text-only) will be added back here as they're needed.
 //
 // Images carry their URL in `data-src`, not `src`: the deck loads them a section
-// at a time (current ± 1) and sets `data-orientation` once each one reports its
-// natural size — so a 100-slide deck never fetches more than a few images ahead.
+// at a time (current ± 1) and swaps in the real src once in view — so a long
+// deck never fetches more than a few images ahead. See Deck.astro's
+// loadSection().
 import type { Slide } from '@/lib/portfolio';
 
 interface Props {
@@ -14,23 +18,10 @@ interface Props {
 }
 
 const { slide } = Astro.props;
-const { heading, subheading, description, media, caption } = slide;
-const hasText = !!(heading || subheading || description);
-// A slide with media but no text is presented media-first: the media scales to
-// fill the stage (bounded by width AND height), rather than flowing at a fixed
-// width. Most case-study slides are this shape.
-const mediaOnly = !!media && !hasText;
+const { media, caption } = slide;
 ---
 
-<div class="slide" data-media-only={mediaOnly ? '' : undefined}>
-  {hasText && (
-    <div class="slide-text">
-      {heading && <h2 class="slide-heading">{heading}</h2>}
-      {subheading && <h3 class="slide-subheading">{subheading}</h3>}
-      {description && <p class="slide-description">{description}</p>}
-    </div>
-  )}
-
+<div class="slide">
   {media && (
     <figure class="slide-media">
       <div class="slide-frame">
@@ -64,34 +55,18 @@ const mediaOnly = !!media && !hasText;
 </div>
 
 <style>
+  /* The media scales to fill the stage — bounded by BOTH width and height so it
+     never overflows or distorts — and stays centered. `min-height: 0` lets the
+     flex children shrink below their intrinsic size so tall media doesn't
+     overflow. `--media-max-h` reserves the stage's vertical chrome (deck top
+     inset 2rem + stage top 3.5rem + stage bottom 6.5rem + caption ~2rem); keep
+     it in sync with the .deck-stage / .deck-slide insets in Deck.astro. */
   .slide {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  .slide-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .slide-heading {
-    font-size: 1.375rem;
-    font-weight: 500;
-    color: #0a0a0a;
-    line-height: 1.25;
-  }
-
-  .slide-subheading {
-    font-size: 1.0625rem;
-    font-weight: 500;
-    color: #374151;
-  }
-
-  .slide-description {
-    color: #374151;
-    line-height: 1.6;
+    justify-content: center;
+    height: 100%;
+    --media-max-h: calc(100vh - 14rem);
   }
 
   .slide-media {
@@ -99,9 +74,18 @@ const mediaOnly = !!media && !hasText;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-height: 0;
+    /* Shrink-wrap the figure to the media and center it, so the caption below
+       aligns to the media's left edge rather than centering. */
+    align-self: center;
+    width: fit-content;
+    max-width: 100%;
   }
 
   .slide-frame {
+    display: flex;
+    min-height: 0;
+    max-width: 100%;
     overflow: hidden;
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
@@ -110,68 +94,14 @@ const mediaOnly = !!media && !hasText;
 
   .slide-frame :is(img, .slide-asset) {
     display: block;
-    width: 100%;
+    width: auto;
     height: auto;
-  }
-
-  .slide-asset {
-    aspect-ratio: 16 / 9;
+    max-width: 100%;
+    max-height: var(--media-max-h);
   }
 
   .slide-caption {
     font-size: 0.875rem;
     color: #6b7280;
-  }
-
-  /* Media-first slide: fill the stage. The figure grows to the available box
-     and the media scales to fit within it (bounded by both width and height),
-     preserving its aspect ratio and staying centered. `min-height: 0` lets the
-     flex children shrink below their intrinsic size so tall media doesn't
-     overflow. The `--media-max-h` fallback keeps media inside the stage's
-     vertical chrome (deck top inset + stage top/bottom insets + caption). */
-  .slide[data-media-only] {
-    height: 100%;
-    justify-content: center;
-    /* Media fills the stage bounds vertically. The subtrahend is the total
-       vertical chrome the stage reserves: deck top inset (2rem) + stage top
-       (3.5rem) + stage bottom (6.5rem) + caption (~2rem). Keep it in sync with
-       the .deck-stage / .deck-slide insets in Deck.astro. */
-    --media-max-h: calc(100vh - 14rem);
-  }
-  .slide[data-media-only] .slide-media {
-    min-height: 0;
-    /* Shrink-wrap the figure to the media and center that block in the stage, so
-       the caption below aligns to the media's left edge rather than centering. */
-    align-self: center;
-    width: fit-content;
-    max-width: 100%;
-  }
-  .slide[data-media-only] .slide-frame {
-    display: flex;
-    min-height: 0;
-    max-width: 100%;
-  }
-  .slide[data-media-only] .slide-frame :is(img, .slide-asset) {
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: var(--media-max-h);
-    aspect-ratio: auto;
-  }
-
-  /* Portrait media sits beside the text on wider viewports. */
-  @media (min-width: 640px) {
-    .slide[data-orientation='portrait'] {
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 2rem;
-    }
-    .slide[data-orientation='portrait'] .slide-text {
-      flex: 1;
-      padding-top: 0.5rem;
-    }
-    .slide[data-orientation='portrait'] .slide-media {
-      flex: 0 0 42%;
-    }
   }
 </style>

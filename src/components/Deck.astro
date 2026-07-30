@@ -486,13 +486,6 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
         s.querySelectorAll<HTMLImageElement>('img[data-media-img]').forEach((img) => {
           if (!img.dataset.src || img.src) return;
           img.src = img.dataset.src;
-          // Flip to the portrait layout once the image reports its natural size
-          // (default renders landscape). Video/YouTube stay 16:9.
-          img.addEventListener('load', () => {
-            if (img.naturalHeight > img.naturalWidth) {
-              img.closest<HTMLElement>('.slide')?.setAttribute('data-orientation', 'portrait');
-            }
-          }, { once: true });
         });
       });
     }
