@@ -38,43 +38,18 @@ project: Blank Page
 period: 2025 – Now
 description: A calmer place to write
 website: https://blank.page
+logo: /logos/blankdotpage_logo.jpeg
 +++
 
-# Blank Page at a glance
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua.
-
-![Overview placeholder](/portfolio/ph-wide.svg)
+![Blank Page projects](/portfolio/blankpage-projects.mp4)
 *A wide establishing shot of the product.*
-
----
-
-# The problem
-
-## What we were really solving
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat.
-
-![Problem placeholder](/portfolio/ph-portrait.svg)
-*A tall screen sits beside the text.*
-
----
-
-# The outcome
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur.
-
-![Outcome placeholder](/portfolio/ph-square.svg)
-*A square crop of the final result.*
 
 +++
 project: Axyom
 period: 2026
 description: Infrastructure for the next thing
 website: https://getaxyom.com
+logo: /logos/axyom_logo.png
 +++
 
 # Axyom at a glance
@@ -112,15 +87,11 @@ project: Palamatch
 period: 2026
 description: Matching, made playful
 website: https://palamatch.com
+logo: /logos/palamatch_logo.svg
 +++
 
-![Palamatch product demo](/portfolio/palamatch-demo.mp4)
-*A wide establishing shot of the product.*
-
----
-
-![Palamatch landing page](/portfolio/palamatch-landing.webp)
-*The landing page.*
+![Palamatch](/portfolio/palamatch.webp)
+*Designed from concept to production, Palamatch is the fastest way to find your perfect padel raquet.*
 
 ---
 
@@ -137,6 +108,7 @@ project: Factorial
 period: 2024 – 2025
 description: Designing at the speed of sales
 website: https://factorialhr.com
+logo: /logos/factorial_logo.jpeg
 +++
 
 # Factorial at a glance
@@ -174,6 +146,7 @@ project: Invopop
 period: 2021 – 2023
 description: Invoicing without the pain
 website: https://invopop.com
+logo: /logos/invopop_logo.jpeg
 +++
 
 # Invopop at a glance
@@ -211,6 +184,7 @@ project: Lana
 period: 2018 – 2021
 description: Banking for the underbanked
 website: https://www.linkedin.com/company/lana-app
+logo: /logos/lana_app_logo.jpeg
 +++
 
 ![Lana home screen](/portfolio/lana-home.webp)
@@ -243,6 +217,7 @@ project: Emojinote
 period: 2018
 description: Notes that speak in emoji
 website: https://youtu.be/xxxx
+logo: /logos/emojinote_logo.jpeg
 +++
 
 # Emojinote at a glance
@@ -280,6 +255,7 @@ project: Cabify
 period: 2016 – 2018
 description: Ride-hailing, redesigned
 website: https://cabify.com
+logo: /logos/cabify_logo.jpeg
 +++
 
 ![Cabify app](/portfolio/cabify-app.webp)
@@ -290,21 +266,12 @@ website: https://cabify.com
 ![Movo scooter-sharing app](/portfolio/cabify-movo.webp)
 *Co-designed the scooter-sharing Movo app with Manu Gamero — now integrated back into the Cabify app and brand. It first launched under a separate brand, for fear that taxi drivers would burn them.*
 
----
-
-# The outcome
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur.
-
-![Outcome placeholder](/portfolio/ph-square.svg)
-*A square crop of the final result.*
-
 +++
 project: Yaxi
 period: 2014 – 2015
 description: Taxis, but civilized
 website: https://www.linkedin.com/company/yaxii
+logo: /logos/yaxi_logo.jpeg
 +++
 
 ![Yaxi ride-hailing app](/portfolio/yaxi-app.webp)

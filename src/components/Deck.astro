@@ -1,11 +1,16 @@
 ---
-// The portfolio deck: one continuous, client-controlled surface that shows one
-// slide at a time. It is rendered whole on every route (all sections in the
-// DOM) so that moving between projects is a client-side pushState — never a
-// document reload — which keeps browser fullscreen alive across the whole deck.
+// A slide deck: one continuous, client-controlled surface that shows one slide
+// at a time. It is rendered whole on every route (all sections in the DOM) so
+// that moving between projects is a client-side pushState — never a document
+// reload — which keeps browser fullscreen alive across the whole deck.
 //
-// Sections = the intro (at `/work/intro`) followed by one per project (at
-// `/work/<slug>`). The URL names the *section*, never the slide: stepping
+// This is a self-contained, reusable overlay: it mounts under `/deck` today
+// (see src/pages/deck/), rising over `/deck` as a drawer, but nothing here is
+// tied to that host — `basePath`/`exitHref` parameterize the routes. It was
+// built to present portfolio work and is kept for reuse elsewhere.
+//
+// Sections = the intro (at `<basePath>/intro`) followed by one per project (at
+// `<basePath>/<slug>`). The URL names the *section*, never the slide: stepping
 // within a section changes nothing; crossing into another section pushes its
 // URL. `initialSection` decides which section this route boots on.
 //
@@ -17,9 +22,15 @@ import type { Project } from '@/lib/portfolio';
 interface Props {
   projects: Project[];
   initialSection: number;
+  /** Route prefix each section links to (`<basePath>/<slug>`). The deck is a
+      self-contained overlay, mounted under `/deck`; this keeps it decoupled from
+      any one host section so the pattern can be reused elsewhere. */
+  basePath?: string;
+  /** Where closing the drawer navigates back to — the page it rose over. */
+  exitHref?: string;
 }
 
-const { projects, initialSection } = Astro.props;
+const { projects, initialSection, basePath = '/deck', exitHref = '/deck' } = Astro.props;
 
 // First slide index of each section (a TOC click lands on its first slide).
 const sectionStarts: number[] = [];
@@ -35,7 +46,7 @@ const slides = projects.flatMap((p, pi) =>
   p.slides.map((slide) => ({ slide, section: pi }))
 );
 
-const hrefFor = (p: Project) => `/work/${p.slug}`;
+const hrefFor = (p: Project) => `${basePath}/${p.slug}`;
 
 // SSR the initial state so the right slide/section paints before JS boots (and
 // as a no-JS fallback for a shared deep link). Every route boots on its
@@ -55,6 +66,7 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
   class="deck"
   id="deck"
   data-initial={initialIndex}
+  data-exit-href={exitHref}
   tabindex="-1"
   transition:name="deck"
   role="dialog"
@@ -81,7 +93,12 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
             type="button"
             data-goto={sectionStarts[i]}
             data-href={hrefFor(p)}
-          >{p.title}</button>
+          >
+            {p.logo
+              ? <img class="deck-toc-logo" src={p.logo} alt="" width="18" height="18" loading="lazy" />
+              : <span class="deck-toc-logo deck-toc-logo-empty" aria-hidden="true"></span>}
+            <span class="deck-toc-label">{p.title}</span>
+          </button>
         </li>
       ))}
     </ul>
@@ -200,9 +217,9 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
   }
 
   /* Entering the deck feels like a drawer rising from the bottom. This covers
-     a DIRECT load of a /work/<slug> route (no view transition). When you arrive
-     via the client router (from /work), the slide-up is driven by the VT pseudo
-     instead — see page-transitions.css — because the transition masks this
+     a DIRECT load of a /deck/<slug> route (no view transition). When you arrive
+     via the client router (from the launcher), the slide-up is driven by the VT
+     pseudo instead — see page-transitions.css — because the transition masks this
      mount animation. Both reuse the `deck-slide-in` keyframe defined there
      (page-transitions.css is bundled into every page, so it's always present).
      Exit is likewise handled there. */
@@ -363,7 +380,9 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     transform: translate(0, -50%);
   }
   .deck-toc-link {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     width: 100%;
     text-align: left;
     padding: 0.3125rem 0.5rem;
@@ -372,6 +391,26 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     color: #6b7280;
     white-space: nowrap;
     transition: background 0.12s ease, color 0.12s ease;
+  }
+  /* Logo chip beside each label — a fixed 18px square, rounded, with a hairline
+     so light logos still read against the white panel. Empty variant (the intro,
+     which has no logo) keeps the labels aligned. object-fit: cover so mixed
+     source aspect ratios fill the square cleanly. */
+  .deck-toc-logo {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 0.25rem;
+    object-fit: cover;
+    box-shadow: inset 0 0 0 1px rgb(10 10 10 / 0.08);
+  }
+  .deck-toc-logo-empty {
+    box-shadow: none;
+  }
+  .deck-toc-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .deck-toc-link:hover {
     background: #f5f5f5;
@@ -441,9 +480,14 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     const slides = Array.from(deck.querySelectorAll<HTMLElement>('.deck-slide'));
     if (!slides.length) return;
 
-    // Exit is a programmatic navigate('/work') — not a hoverable link — so warm
+    // The page the drawer rose over and returns to on close. Authored server-
+    // side (Deck's `exitHref` prop) and read here since the client script can't
+    // see Astro props.
+    const exitHref = deck.dataset.exitHref || '/deck';
+
+    // Exit is a programmatic navigate(exitHref) — not a hoverable link — so warm
     // its HTML now, so closing the drawer starts its transition instantly.
-    prefetch('/work');
+    prefetch(exitHref);
     const tocBars = Array.from(deck.querySelectorAll<HTMLElement>('.deck-toc-bar'));
     const tocLinks = Array.from(deck.querySelectorAll<HTMLElement>('.deck-toc-link'));
     const counter = deck.querySelector<HTMLElement>('[data-counter]');
@@ -503,12 +547,31 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
       counter.textContent = `${index - sectionStart[sec] + 1} / ${sectionSlides[sec].length}`;
     }
 
+    // Autoplay is unreliable for a <video autoplay> that's visibility:hidden at
+    // load (every non-initial slide): the attribute fires once, while hidden, so
+    // the browser skips it and revealing the slide later never retries. Drive
+    // playback by hand instead — start the active slide's video from the top,
+    // pause the one we left — so a GIF-style demo always runs when it's on screen.
+    function playVideos(slide: HTMLElement) {
+      slide.querySelectorAll('video').forEach((v) => {
+        v.currentTime = 0;
+        v.play?.().catch(() => {});
+      });
+    }
+    function pauseVideos(slide: HTMLElement) {
+      slide.querySelectorAll('video').forEach((v) => v.pause?.());
+    }
+
     // Paint the current index/section, touching only what actually changed
     // (the previous and new active slide/toc entry) rather than rescanning
     // every slide and toc item on every navigation.
     function render(sec: number) {
-      if (prevIndex >= 0) slides[prevIndex].classList.remove('is-active');
+      if (prevIndex >= 0) {
+        slides[prevIndex].classList.remove('is-active');
+        pauseVideos(slides[prevIndex]);
+      }
       slides[index].classList.add('is-active');
+      playVideos(slides[index]);
       if (sec !== prevSection) {
         if (prevSection >= 0) {
           tocBars[prevSection]?.classList.remove('is-active');
@@ -588,15 +651,15 @@ const initialCount = projects[initialSection]?.slides.length ?? 0;
     }, { signal });
     const focusOnNav = () => { if (document.fullscreenElement) hideChrome(); };
 
-    // Leave for /work by dropping the deck away to reveal it — a client-side
-    // navigation (no reload). The deck's `transition:name="deck"` (set
+    // Leave for the host page by dropping the deck away to reveal it — a client-
+    // side navigation (no reload). The deck's `transition:name="deck"` (set
     // declaratively in the markup, not via JS — Astro's router resets ad-hoc
     // inline view-transition-names set right before navigate()) scopes the
-    // drop-down animation to this element; suppressNextReveal() tells /work
+    // drop-down animation to this element; suppressNextReveal() tells the host
     // not to replay its entry reveal, so it reads as if it were always there.
     function exitDeck() {
       suppressNextReveal();
-      navigate('/work');
+      navigate(exitHref);
     }
 
     // --- Keyboard ---

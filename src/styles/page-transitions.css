@@ -6,16 +6,18 @@
    page-specific chunk vanishes at the exact moment the page it names swaps
    out. Any future `transition:name` exit/entry animation belongs here too. */
 
-/* Portfolio deck (see Deck.astro, which carries transition:name="deck").
-   Exit (deck → /work, old-only group): the deck drops straight down to
-   reveal /work sitting behind it (which arrives with its own reveal
+/* Slide deck (see Deck.astro, which carries transition:name="deck"). Mounted
+   under /deck, rising over its launcher (/deck), but these rules key off the
+   `.deck` element's presence — not the route — so they're host-agnostic.
+   Exit (deck → launcher, old-only group): the deck drops straight down to
+   reveal the launcher sitting behind it (which arrives with its own reveal
    suppressed via suppressNextReveal(), so it reads as if it had been there
    all along).
-   Entry (/work → deck, new-only group): the deck rises from the bottom. This
+   Entry (launcher → deck, new-only group): the deck rises from the bottom. This
    MUST be driven here through the VT pseudo-element — not the component's own
    `deck-enter` CSS mount animation, which the transition snapshots over and
    masks, making the deck pop in instead of slide. (Deck.astro's `deck-enter`
-   still covers the no-transition path: a direct load of a /work/<slug> route.) */
+   still covers the no-transition path: a direct load of a /deck/<slug> route.) */
 /* Drawer motion, one source of truth for every moment the drawer moves (here
    and in Deck.astro). Enter and exit use OPPOSITE easings on purpose:
    - Arrivals (open, scrim fade-in, drag snap-back) DECELERATE into place —
@@ -62,23 +64,24 @@
   animation: scrim-fade-in var(--drawer-dur) var(--drawer-ease);
 }
 
-/* Keep the /work page visible behind the drawer as it rises (open only). The
-   site-wide rule (BaseLayout) swaps `root` instantly, so the outgoing /work
+/* Keep the launcher page visible behind the drawer as it rises (open only). The
+   site-wide rule (BaseLayout) swaps `root` instantly, so the outgoing launcher
    snapshot vanishes at once. Scoped to the open transition — `html:has(.deck)`
-   only matches after the swap INTO a deck route, never on exit back to /work —
-   we instead HOLD the /work snapshot in place for the drawer's rise and keep
-   the incoming (blank) deck background hidden, so the scrim dims the real work
-   page while the drawer climbs over it. It's a frozen snapshot, alive only for
-   the transition; when the drawer settles it hands off to the real (blank)
-   background under the now-full scrim. */
+   only matches after the swap INTO a deck route, never on exit back to the
+   launcher — we instead HOLD the launcher snapshot in place for the drawer's
+   rise and keep the incoming (blank) deck background hidden, so the scrim dims
+   the real launcher page while the drawer climbs over it. It's a frozen
+   snapshot, alive only for the transition; when the drawer settles it hands off
+   to the real (blank) background under the now-full scrim. */
 @keyframes vt-hold { from, to { opacity: 1; } }
 @keyframes vt-hidden { from, to { opacity: 0; } }
-/* When /work was SCROLLED at open time, its fixed header has shrunk out of the
-   drawer's top strip, so real content sits there — a hard cut to blank at
+/* When the launcher was SCROLLED at open time, its fixed header has shrunk out
+   of the drawer's top strip, so real content sits there — a hard cut to blank at
    settle would pop. Dissolve the snapshot over the last third of the rise so it
    melts away instead. Unscrolled, the strip is the (full-height) header ≈ blank,
    so the seam is invisible and we keep the solid hold. `.deck-from-scrolled` is
-   set on <html> for the open transition by BaseLayout, from /work's scrollY. */
+   set on <html> for the open transition by BaseLayout, from the launcher's
+   scrollY. */
 @keyframes vt-hold-fade { 0%, 33% { opacity: 1; } 100% { opacity: 0; } }
 html:has(.deck)::view-transition-old(root) {
   animation: vt-hold var(--drawer-dur) linear;

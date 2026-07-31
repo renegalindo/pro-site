@@ -2,7 +2,7 @@
 //
 // Authoring conventions (all markdown-native):
 //   +++ … +++      A metadata block that STARTS a new section. Holds
-//                  `project`, `period`, `description`, `website`, and an
+//                  `project`, `period`, `description`, `website`, `logo`, and an
 //                  optional `slug` (defaults to a slugified title). Every slide
 //                  until the next +++ belongs to this section.
 //   ---            A slide break within a section.
@@ -38,12 +38,14 @@ export interface Period {
 
 export interface Project {
   title: string;
-  /** URL-safe id used in the route (`/work/<slug>`). Derived from the title
+  /** URL-safe id used in the route (`/deck/<slug>`). Derived from the title
       unless a `slug:` is authored (the intro section pins `slug: intro`, so it
-      routes to `/work/intro`). */
+      routes to `/deck/intro`). */
   slug: string;
   description?: string;
   website?: string;
+  /** URL of the project's logo (shown beside its name in the deck's TOC rail). */
+  logo?: string;
   period?: Period;
   slides: Slide[];
 }
@@ -80,6 +82,7 @@ export function parsePortfolio(raw: string): Project[] {
       slug: meta.slug || slugify(meta.project),
       description: meta.description,
       website: meta.website,
+      logo: meta.logo,
       period: meta.period ? parsePeriod(meta.period) : undefined,
       slides: parseSlides(body),
     });

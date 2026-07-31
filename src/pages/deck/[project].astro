@@ -1,0 +1,35 @@
+---
+// The slide deck, mounted as a self-contained overlay under /deck:
+//   /deck/intro      → the intro section
+//   /deck/<slug>     → each project
+// (/deck itself is the launcher it rises over — deck/index.astro.) Every route
+// renders the whole deck (all sections in the DOM) and only differs in which
+// section it boots on — so moving between sections is a client-side pushState,
+// not a reload, and fullscreen survives the whole presentation.
+//
+// Preserved from the portfolio-deck experiment: no longer how work is shown
+// (each project now has its own page), but kept intact and runnable so the
+// pattern can be reused. Decoupled from /work via Deck's basePath/exitHref.
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Deck from '@/components/Deck.astro';
+import { parsePortfolio } from '@/lib/portfolio';
+import raw from '@/data/portfolio.md?raw';
+
+export function getStaticPaths() {
+  const projects = parsePortfolio(raw);
+  return projects.map((p) => ({
+    params: { project: p.slug },
+    props: { slug: p.slug },
+  }));
+}
+
+const { slug } = Astro.props as { slug: string };
+const projects = parsePortfolio(raw);
+const initialSection = Math.max(0, projects.findIndex((p) => p.slug === slug));
+---
+
+<BaseLayout title="Deck" description="Slide-deck prototype" hideHeader hideFooter noStagger>
+  {/* basePath/exitHref default to /deck — the mount point here. Pass them
+      explicitly only if the deck is ever mounted under a different path. */}
+  <Deck projects={projects} initialSection={initialSection} />
+</BaseLayout>
