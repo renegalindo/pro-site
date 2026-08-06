@@ -1,68 +1,17 @@
 ---
 interface Props {
   title: string;
-  logo?: string;
+  tagline?: string;
 }
 
-const { title, logo } = Astro.props;
+const { title, tagline } = Astro.props;
 ---
 
-<header id="page-header" class="top-0 z-10 w-full fixed bg-gray-50">
-  <div class="page-header-inner max-w-2xl mx-auto px-4">
-    <div class="flex items-center gap-4">
-      {logo && (
-        <img
-          id="page-header-logo"
-          src={logo}
-          alt=""
-          class="rounded-xl shrink-0 object-cover"
-        />
-      )}
-      <h1 class="page-header-title text-2xl font-medium text-gray-900">{title}</h1>
-    </div>
+<header class="w-full">
+  <div class="max-w-2xl mx-auto px-4 pt-24 sm:pt-32">
+    <h1 class="text-[2.75rem] font-medium leading-[1.1] tracking-tight text-gray-900">{title}</h1>
+    {tagline && (
+      <p class="mt-2 text-xl text-gray-900">{tagline}</p>
+    )}
   </div>
 </header>
-
-<style>
-  /* Scroll-linked collapse, mirroring the nav header. `--t` (0 = expanded,
-     1 = compact) is written by watchHeaderCollapse; values interpolate via
-     calc() so the shrink tracks the scrollbar. */
-  #page-header {
-    --t: 0;
-  }
-
-  .page-header-title {
-    font-size: calc(1.5rem - var(--t) * 0.375rem);
-  }
-
-  /* Expanded: 48 + 40 + 16 = 104px. Compact: 18 + 32 + 18 = 68px. */
-  .page-header-inner {
-    padding-top: calc(3rem - var(--t) * 1.875rem);
-    padding-bottom: calc(1rem + var(--t) * 0.125rem);
-  }
-
-  #page-header-logo {
-    width: calc(2.5rem - var(--t) * 0.5rem);
-    height: calc(2.5rem - var(--t) * 0.5rem);
-  }
-</style>
-
-<script>
-  import { watchHeaderCollapse } from '@/scripts/headerScroll';
-
-  // Reset per page-load so the window scroll listener is torn down (rather than
-  // accumulating) across soft navigations to and from work-detail pages.
-  let controller: AbortController | null = null;
-
-  function setupPageHeader() {
-    controller?.abort();
-    controller = new AbortController();
-
-    const header = document.getElementById('page-header');
-    if (!header) return;
-
-    watchHeaderCollapse(header, controller.signal);
-  }
-
-  document.addEventListener('astro:page-load', setupPageHeader);
-</script>

@@ -10,18 +10,21 @@ interface Props {
   description?: string;
   /** Heading shown in the page header; defaults to `title`. */
   pageTitle?: string;
-  pageLogo?: string;
+  /** Tagline shown under the title in the page header. */
+  pageTagline?: string;
   backLink?: { href: string; label: string };
   nextLink?: { href: string; label: string };
+  hideFooter?: boolean;
 }
 
 const {
   title,
   description,
   pageTitle = title,
-  pageLogo,
+  pageTagline,
   backLink,
   nextLink,
+  hideFooter = false,
 } = Astro.props;
 ---
 
@@ -29,9 +32,10 @@ const {
   title={title}
   description={description}
   pageTitle={pageTitle}
-  pageLogo={pageLogo}
+  pageTagline={pageTagline}
   backLink={backLink}
   nextLink={nextLink}
+  hideFooter={hideFooter}
 >
   <article class="prose" data-escape-back={backLink?.href}>
     <slot />
@@ -40,7 +44,17 @@ const {
 
 <style>
   .prose {
-    @apply text-gray-700 leading-relaxed;
+    @apply text-gray-900 leading-relaxed;
+  }
+
+  /* Image break-out: text stays in the normal reading column, but any paragraph
+     holding image(s) escapes it — capped wider than the text and centred on the
+     page. Centring is done with margin (not transform) on purpose: the content
+     reveal animates `transform`, which would otherwise clobber the centring. */
+  .prose :global(p:has(> img)) {
+    --breakout-w: min(64rem, 100vw - 2rem);
+    width: var(--breakout-w);
+    margin-left: calc(50% - var(--breakout-w) / 2);
   }
 
   .prose :global(h2) {
@@ -65,6 +79,32 @@ const {
 
   .prose :global(a) {
     @apply underline hover:text-gray-600;
+  }
+
+  /* Images: centered, rounded, and height-capped so a tall phone screenshot
+     doesn't run away vertically. `max-w-full` keeps wide images in the column. */
+  .prose :global(img) {
+    @apply block mx-auto my-16 max-h-[75vh] max-w-full w-auto rounded-2xl;
+  }
+  /* `data-zoomable` is added by the lightbox once it wires the image up, so the
+     zoom cursor only shows when the image is actually interactive. */
+  .prose :global(img[data-zoomable]) {
+    cursor: zoom-in;
+  }
+
+  /* A single image centered in its own paragraph. */
+  .prose :global(p:has(> img:only-child)) {
+    @apply text-center;
+  }
+
+  /* Two or more images in one paragraph (consecutive `![](…)` lines with no
+     blank line between them) lay out as an equal-width row that shares the
+     column. Each image fills its track; heights differ naturally. */
+  .prose :global(p:has(> img + img)) {
+    @apply my-16 flex gap-3;
+  }
+  .prose :global(p:has(> img + img) > img) {
+    @apply my-0 w-full min-w-0 flex-1;
   }
 </style>
 

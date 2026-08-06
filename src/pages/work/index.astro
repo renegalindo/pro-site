@@ -2,25 +2,28 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
+import { partitionWork } from '@/lib/work';
 
 const work = await getCollection('work');
-const byOrder = (a, b) => a.data.order - b.data.order;
-
-const companies = work.filter(p => !p.data.sideProject).sort(byOrder);
-const sideProjects = work.filter(p => p.data.sideProject).sort(byOrder);
+const { companies, sideProjects } = partitionWork(work);
 
 const sections = [
   { label: 'Companies', items: companies },
   { label: 'Projects', items: sideProjects },
 ];
 
-// Each work row links straight out to the product (external, new tab). The deck
-// prototype that these rows used to feed now lives on its own at /deck.
+// A published project links in-tab to its /work/<slug> detail page; an
+// unpublished one links straight out to the live product in a new tab.
+// Resolving the destination here keeps ProjectCard dumb about the switch.
+const linkFor = (project) =>
+  project.data.published
+    ? { href: `/work/${project.slug}`, external: false }
+    : { href: project.data.externalUrl, external: true };
 ---
 
 <BaseLayout title="Work" description="Design work by René Galindo" hideFooter>
   <div class="space-y-8">
-    <div class="space-y-4 text-gray-700 leading-relaxed">
+    <div class="space-y-4 text-gray-900 leading-relaxed">
       <p>
         I've been designing the software I want to use since I bought my first iPhone in 2010. Along the way I've worked for different startups, mostly 0 to 1, moving between contributor and leadership roles.
       </p>
@@ -35,14 +38,13 @@ const sections = [
     {sections.map((section) => (
       <section>
         <h2 class="mt-8 mb-2 pb-1 text-base text-gray-500">{section.label}</h2>
-        <ul class="flex flex-col gap-4 text-gray-700 sm:gap-2.5 sm:pr-4">
+        <ul class="flex flex-col gap-4 text-gray-900 sm:gap-2.5 sm:pr-4">
           {section.items.map((project) => (
             <ProjectCard
               title={project.data.title}
               year={project.data.year}
               logo={project.data.logo}
-              href={project.data.externalUrl}
-              external
+              {...linkFor(project)}
             />
           ))}
         </ul>

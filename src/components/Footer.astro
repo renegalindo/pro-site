@@ -26,14 +26,10 @@ const { backLink, nextLink } = Astro.props;
           </a>
         )}
       </div>
-      {nextLink ? (
+      {nextLink && (
         <a href={nextLink.href} class="hit-target flex items-center gap-1.5 hover:text-gray-600 transition-colors">
           {nextLink.label}
           <ArrowRight size={16} />
-        </a>
-      ) : (
-        <a href="mailto:hello@renegalindo.com" class="hit-target hover:text-gray-600 transition-colors">
-          Say hello 👋
         </a>
       )}
     </div>

@@ -100,7 +100,7 @@ const sections = [
   hideFooter
 >
   <div class="space-y-8">
-    <p class="text-gray-700">
+    <p class="text-gray-900">
       Inspired by Brian Lovin's <a
         href="https://brianlovin.com/stack"
         target="_blank"
@@ -113,7 +113,7 @@ const sections = [
         <h2 class="mt-8 mb-2 pb-1 text-base text-gray-500">
           {section.title}
         </h2>
-        <ul class="flex flex-col gap-4 text-gray-700 sm:gap-2.5">
+        <ul class="flex flex-col gap-4 text-gray-900 sm:gap-2.5">
           {section.items.map((item) => (
             <li class="relative pl-7 sm:flex sm:items-baseline">
               <a
@@ -124,7 +124,7 @@ const sections = [
               >
                 <AppIconLabel icon={item.icon} label={item.name} />
               </a>
-              <span class="block text-gray-700 sm:ml-8">{item.description}</span>
+              <span class="block text-gray-900 sm:ml-8">{item.description}</span>
             </li>
           ))}
         </ul>

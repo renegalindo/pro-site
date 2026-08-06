@@ -1,5 +1,13 @@
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image preview" tabindex="-1">
+  <div class="lightbox-backdrop"></div>
+  <button type="button" class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="Previous image">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+  </button>
   <img class="lightbox-image" id="lightbox-image" alt="" />
+  <button type="button" class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="Next image">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+  </button>
+  <div class="lightbox-counter" id="lightbox-counter" aria-live="polite"></div>
 </div>
 
 <style>
@@ -11,105 +19,408 @@
     align-items: center;
     justify-content: center;
     padding: 3.5rem 1.5rem;
-    background: rgba(249, 250, 251, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    cursor: zoom-out;
-    opacity: 0;
+    /* Closed: unpainted and out of the a11y tree / tab order. Visibility flips
+       instantly on open, and holds through the close animation before hiding
+       (the delay roughly matches the morph duration). */
     visibility: hidden;
     pointer-events: none;
-    /* Hold visibility until the fade finishes, so while closed the overlay is
-       unpainted and out of the a11y tree and tab order; flips instantly on open. */
-    transition: opacity 0.2s ease-out, visibility 0s linear 0.2s;
+    transition: visibility 0s linear 0.4s;
   }
 
   .lightbox[data-open] {
-    opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    transition: opacity 0.2s ease-out, visibility 0s;
+    transition: visibility 0s;
+  }
+
+  /* Separate backdrop element so it can fade independently of the image and
+     controls (which stay fully opaque while the image morphs). */
+  .lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(249, 250, 251, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+    cursor: zoom-out;
+  }
+  .lightbox[data-open] .lightbox-backdrop {
+    opacity: 1;
   }
 
   .lightbox-image {
-    max-width: 100%;
-    max-height: 100%;
+    position: relative;
+    max-width: min(64rem, 100vw - 3rem);
+    max-height: calc(100vh - 7rem);
     width: auto;
     height: auto;
     object-fit: contain;
+    border-radius: 12px;
     cursor: zoom-out;
     box-shadow:
       0 0 0 1px rgba(10, 10, 10, 0.05),
-      0 12px 32px -8px rgba(0, 0, 0, 0.18);
-    transform: scale(0.97);
-    transition: transform 0.25s ease-out;
+      0 12px 40px -8px rgba(0, 0, 0, 0.22);
   }
 
-  .lightbox[data-open] .lightbox-image {
-    transform: scale(1);
+  /* Nav arrows */
+  .lightbox-nav {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: 0 0.5rem;
+    border-radius: 9999px;
+    color: #111827;
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(10, 10, 10, 0.04);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease-out 0.1s, background 0.15s ease, transform 0.15s ease;
+  }
+  .lightbox[data-open] .lightbox-nav {
+    opacity: 1;
+  }
+  .lightbox-nav:hover {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .lightbox-nav:active {
+    transform: scale(0.94);
+  }
+  .lightbox-nav:focus-visible {
+    outline: 2px solid #9ca3af;
+    outline-offset: 2px;
+  }
+  /* Single-image galleries have no arrows or counter. */
+  .lightbox[data-single] .lightbox-nav,
+  .lightbox[data-single] .lightbox-counter {
+    display: none;
+  }
+
+  .lightbox-counter {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    color: #6b7280;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-out 0.1s;
+  }
+  .lightbox[data-open] .lightbox-counter {
+    opacity: 1;
+  }
+
+  /* During the close morph the overlay stays painted (so the image can animate)
+     while the backdrop and chrome fade out. Declared here — after the
+     `[data-open]` rules so it wins — instead of poking inline opacity from JS. */
+  .lightbox[data-closing] .lightbox-backdrop,
+  .lightbox[data-closing] .lightbox-nav,
+  .lightbox[data-closing] .lightbox-counter {
+    opacity: 0;
+  }
+
+  @media (max-width: 640px) {
+    .lightbox {
+      padding: 2rem 0.75rem;
+    }
+    .lightbox-nav {
+      margin: 0 0.125rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .lightbox,
-    .lightbox-image {
-      transition: none;
-    }
-    .lightbox-image,
-    .lightbox[data-open] .lightbox-image {
-      transform: none;
+    .lightbox-backdrop,
+    .lightbox-nav,
+    .lightbox-counter {
+      transition-duration: 0.01ms;
     }
   }
 </style>
 
 <script>
+  const DURATION = 360;
+  const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const THUMB_RADIUS = '16px';
+  const OPEN_RADIUS = '12px';
+
+  const srcOf = (img: HTMLImageElement) => img.currentSrc || img.src;
+  const prefersReduced = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   function setupLightbox() {
     const lightbox = document.getElementById('lightbox');
     const image = document.getElementById('lightbox-image') as HTMLImageElement | null;
-    if (!lightbox || !image) return;
+    const prevBtn = document.getElementById('lightbox-prev');
+    const nextBtn = document.getElementById('lightbox-next');
+    const counter = document.getElementById('lightbox-counter');
+    if (!lightbox || !image || !prevBtn || !nextBtn || !counter) return;
 
-    // Guard against re-binding: the lightbox node persists across view
-    // transitions (transition:persist), so its listeners must attach once.
+    // Tag article images as zoomable on every load (markdown can't add the
+    // attribute itself). The `/now` snapshots already carry `[data-zoomable]`.
+    document.querySelectorAll<HTMLImageElement>('.prose img:not([data-zoomable])').forEach((img) => {
+      img.setAttribute('data-zoomable', '');
+      img.setAttribute('role', 'button');
+      img.setAttribute('tabindex', '0');
+      if (!img.getAttribute('aria-label')) {
+        img.setAttribute('aria-label', img.alt ? `Expand image: ${img.alt}` : 'Expand image');
+      }
+    });
+
+    // Bind interaction listeners once — the lightbox persists across view
+    // transitions, so its handlers must not stack up.
     if (lightbox.dataset.bound) return;
     lightbox.dataset.bound = 'true';
 
+    let gallery: HTMLImageElement[] = [];
+    let index = -1;
+    let hiddenThumb: HTMLElement | null = null;
     let lastFocused: HTMLElement | null = null;
+    let animating = false;
 
-    const open = (src: string, alt: string) => {
+    // Every `[data-zoomable]` maps to one image (itself, or the one it wraps),
+    // collected in document order so navigation follows the page.
+    const collectGallery = () =>
+      Array.from(document.querySelectorAll('[data-zoomable]'))
+        .map((t) => (t instanceof HTMLImageElement ? t : t.querySelector('img')))
+        .filter((img): img is HTMLImageElement => !!img);
+
+    const clearGeometry = () => {
+      image.style.position = '';
+      image.style.left = image.style.top = image.style.width = image.style.height = '';
+      image.style.borderRadius = '';
+      image.style.opacity = '';
+    };
+
+    // Animate the image between two on-screen rectangles by its geometry (not a
+    // transform scale) so corners and shadow stay crisp throughout the morph.
+    const morph = (from: DOMRect, to: DOMRect, r0: string, r1: string) => {
+      image.style.position = 'fixed';
+      return image.animate(
+        [
+          { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, borderRadius: r0 },
+          { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px`, borderRadius: r1 },
+        ],
+        { duration: DURATION, easing: EASE, fill: 'both' },
+      );
+    };
+
+    const updateChrome = () => {
+      counter.textContent = `${index + 1} / ${gallery.length}`;
+      lightbox.toggleAttribute('data-single', gallery.length <= 1);
+    };
+
+    const preloadNeighbors = () => {
+      [index - 1, index + 1].forEach((i) => {
+        const el = gallery[(i + gallery.length) % gallery.length];
+        if (el) new Image().src = srcOf(el);
+      });
+    };
+
+    const showThumb = (el: HTMLElement | null) => {
+      if (el) el.style.visibility = '';
+    };
+    const hideThumb = (el: HTMLElement | null) => {
+      if (el) el.style.visibility = 'hidden';
+    };
+    const swapImage = (el: HTMLImageElement) => {
+      image.src = srcOf(el);
+      image.alt = el.alt;
+    };
+
+    // `gallery` is collected by the trigger handlers (which need it to resolve
+    // the clicked index); `open` trusts that list rather than re-scanning.
+    const open = (i: number) => {
+      if (animating) return;
+      if (i < 0 || i >= gallery.length) return;
+      index = i;
       lastFocused = document.activeElement as HTMLElement;
-      image.src = src;
-      image.alt = alt;
+
+      const thumb = gallery[index];
+      const from = thumb.getBoundingClientRect();
+      hiddenThumb = thumb;
+      hideThumb(thumb);
+
+      swapImage(thumb);
       document.documentElement.style.overflow = 'hidden';
+      updateChrome();
       lightbox.setAttribute('data-open', '');
       lightbox.focus();
+      preloadNeighbors();
+
+      if (prefersReduced()) return;
+
+      // Measure the settled (contained, centred) rect while invisible, then run
+      // the morph from the thumbnail's rect up to it.
+      image.style.opacity = '0';
+      requestAnimationFrame(() => {
+        // Drop any lingering animation fill before measuring the target rect.
+        image.getAnimations().forEach((a) => a.cancel());
+        clearGeometry();
+        image.style.opacity = '0';
+        const to = image.getBoundingClientRect();
+        image.style.opacity = '1';
+        animating = true;
+        const anim = morph(from, to, THUMB_RADIUS, OPEN_RADIUS);
+        anim.onfinish = () => {
+          // Cancel so `fill: both` stops overriding the settled layout, then
+          // hand the image back to the centred flex flow.
+          anim.cancel();
+          clearGeometry();
+          animating = false;
+        };
+      });
     };
 
     const close = () => {
-      lightbox.removeAttribute('data-open');
-      document.documentElement.style.overflow = '';
-      lastFocused?.focus();
+      if (animating || !lightbox.hasAttribute('data-open')) return;
+      const thumb = gallery[index];
+
+      const finish = () => {
+        lightbox.removeAttribute('data-open');
+        lightbox.removeAttribute('data-closing');
+        document.documentElement.style.overflow = '';
+        showThumb(hiddenThumb);
+        hiddenThumb = null;
+        clearGeometry();
+        lastFocused?.focus();
+      };
+
+      if (prefersReduced() || !thumb) {
+        finish();
+        return;
+      }
+
+      // Bring the destination thumbnail into view if navigation left it
+      // off-screen, so the image morphs back to a visible anchor.
+      let to = thumb.getBoundingClientRect();
+      if (to.top < 0 || to.bottom > window.innerHeight) {
+        thumb.scrollIntoView({ block: 'center' });
+        to = thumb.getBoundingClientRect();
+      }
+      const from = image.getBoundingClientRect();
+
+      // Backdrop + chrome fade out via CSS; the image stays opaque and morphs.
+      lightbox.setAttribute('data-closing', '');
+
+      animating = true;
+      const anim = morph(from, to, OPEN_RADIUS, THUMB_RADIUS);
+      anim.onfinish = () => {
+        anim.cancel();
+        animating = false;
+        finish();
+      };
     };
 
+    const go = (dir: number) => {
+      if (animating || gallery.length <= 1) return;
+      const prevThumb = gallery[index];
+      index = (index + dir + gallery.length) % gallery.length;
+      const nextThumb = gallery[index];
+      showThumb(prevThumb);
+      hideThumb(nextThumb);
+      hiddenThumb = nextThumb;
+      updateChrome();
+      preloadNeighbors();
+
+      if (prefersReduced()) {
+        swapImage(nextThumb);
+        return;
+      }
+
+      // Light directional cross-fade between images (distinct from the open
+      // morph). Fade the current out toward the travel direction, swap, fade in.
+      const out = image.animate(
+        [
+          { opacity: 1, transform: 'translateX(0)' },
+          { opacity: 0, transform: `translateX(${-dir * 24}px)` },
+        ],
+        { duration: 140, easing: 'ease-in', fill: 'forwards' },
+      );
+      animating = true;
+      out.onfinish = () => {
+        out.cancel();
+        swapImage(nextThumb);
+        const inn = image.animate(
+          [
+            { opacity: 0, transform: `translateX(${dir * 24}px)` },
+            { opacity: 1, transform: 'translateX(0)' },
+          ],
+          { duration: 200, easing: 'ease-out', fill: 'forwards' },
+        );
+        inn.onfinish = () => {
+          inn.cancel();
+          image.style.transform = '';
+          image.style.opacity = '';
+          animating = false;
+        };
+      };
+    };
+
+    // Resolve a trigger's image to its gallery index and open — collecting the
+    // gallery once (the resolved list is what `open` then works from).
+    const openFromTrigger = (img: HTMLImageElement) => {
+      gallery = collectGallery();
+      open(gallery.indexOf(img));
+    };
+
+    // Open: click or keyboard-activate any zoomable trigger.
     document.addEventListener('click', (e) => {
+      if (lightbox.hasAttribute('data-open')) return;
       const trigger = (e.target as HTMLElement).closest('[data-zoomable]');
       if (!trigger) return;
-      // Accept the marker on the image itself or on a wrapper around it, so
-      // markdown-authored images can opt in without extra markup.
       const img = trigger instanceof HTMLImageElement ? trigger : trigger.querySelector('img');
       if (!img) return;
       e.preventDefault();
-      open(img.currentSrc || img.src, img.alt);
+      openFromTrigger(img as HTMLImageElement);
     });
 
-    // Single-image zoom (medium-zoom convention): the whole overlay is one
-    // toggle, so a click anywhere — image or backdrop — closes it.
-    lightbox.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      const active = document.activeElement as HTMLElement | null;
+      if (!lightbox.hasAttribute('data-open') && active?.matches('[data-zoomable]') && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        openFromTrigger(active as HTMLImageElement);
+      }
+    });
+
+    // Arrows navigate and must not bubble to the backdrop/image close handler.
+    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
+    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); });
+
+    // Click anywhere else in the overlay (backdrop or the image) closes it.
+    lightbox.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('.lightbox-nav')) return;
+      close();
+    });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && lightbox.hasAttribute('data-open')) {
-        e.preventDefault();
-        e.stopPropagation();
-        close();
-      }
+      if (!lightbox.hasAttribute('data-open')) return;
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
     }, { capture: true });
+
+    // Touch: horizontal swipe navigates, a downward swipe closes.
+    let tx = 0, ty = 0;
+    lightbox.addEventListener('touchstart', (e) => {
+      tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY;
+    }, { passive: true });
+    lightbox.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - tx;
+      const dy = e.changedTouches[0].clientY - ty;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
+      else if (dy > 70) close();
+    }, { passive: true });
   }
 
   setupLightbox();

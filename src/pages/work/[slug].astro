@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { orderedWork } from '@/lib/work';
+
+export async function getStaticPaths() {
+  // Only published projects get a page. Unpublished ones link straight out from
+  // the list (see ProjectCard wiring in work/index.astro), so building a page
+  // for them would expose in-progress work at a guessable URL.
+  const work = await getCollection('work');
+  const ordered = orderedWork(work.filter((p) => p.data.published));
+
+  return ordered.map((project, index) => {
+    // Cycle to the next published study; only offered when there's more than one.
+    const nextProject = ordered.length > 1 ? ordered[(index + 1) % ordered.length] : undefined;
+    return {
+      params: { slug: project.slug },
+      props: { project, nextProject },
+    };
+  });
+}
+
+interface Props {
+  project: CollectionEntry<'work'>;
+  nextProject?: CollectionEntry<'work'>;
+}
+
+const { project, nextProject } = Astro.props;
+const { Content } = await project.render();
+
+const nextLink = nextProject
+  ? { href: `/work/${nextProject.slug}`, label: 'Next' }
+  : undefined;
+---
+
+<ArticleLayout
+  title={project.data.title}
+  description={project.data.tagline}
+  pageTagline={project.data.tagline}
+  backLink={{ href: '/work', label: 'Work' }}
+  nextLink={nextLink}
+  hideFooter
+>
+  <Content />
+</ArticleLayout>

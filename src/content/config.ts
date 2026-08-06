@@ -4,17 +4,23 @@ const work = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    description: z.string(),
+    // Short lead line shown at the top of the detail page (and used as the
+    // page's meta description). Optional — omit for projects without one yet.
+    tagline: z.string().optional(),
     company: z.string().optional(),
     role: z.string().optional(),
     year: z.string().optional(),
-    featured: z.boolean().default(false),
     sideProject: z.boolean().default(false),
     order: z.number().default(0),
     color: z.string().optional(),
     logo: z.string().optional(),
-    // When set, the project card links straight out to this URL (new tab)
-    // instead of to its (placeholder) internal detail page.
+    // Visibility switch. When true, the project's detail page at /work/<slug>
+    // is generated and its card links there. When false (default), the page is
+    // not built and the card links straight out to `externalUrl` (new tab), so
+    // in-progress work can't be reached even by direct URL.
+    published: z.boolean().default(false),
+    // Where an unpublished card links to (the live product). Also shown as the
+    // outbound link inside a published detail page.
     externalUrl: z.string().url().optional(),
   }),
 });

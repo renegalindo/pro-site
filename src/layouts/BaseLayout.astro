@@ -13,7 +13,7 @@ interface Props {
   description?: string;
   hideHeader?: boolean;
   pageTitle?: string;
-  pageLogo?: string;
+  pageTagline?: string;
   hideFooter?: boolean;
   backLink?: {
     href: string;
@@ -36,7 +36,7 @@ const {
   description = 'René Galindo',
   hideHeader = false,
   pageTitle,
-  pageLogo,
+  pageTagline,
   hideFooter = false,
   backLink,
   nextLink,
@@ -48,7 +48,7 @@ const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`
 const showNavHeader = !hideHeader && !pageTitle;
 const showPageHeader = !!pageTitle;
 const contentTopPadding = showPageHeader
-  ? 'pt-[120px] sm:pt-[128px]'
+  ? 'pt-10'
   : showNavHeader
     ? 'pt-[112px] sm:pt-[120px]'
     : 'pt-4 sm:pt-6';
@@ -209,7 +209,7 @@ const contentTopPadding = showPageHeader
   <body class="bg-gray-50 text-gray-900 antialiased">
     <div class="min-h-screen flex flex-col">
       <Header hidden={!showNavHeader} />
-      {showPageHeader && <PageHeader title={pageTitle!} logo={pageLogo} />}
+      {showPageHeader && <PageHeader title={pageTitle!} tagline={pageTagline} />}
       <main data-no-stagger={noStagger ? '' : undefined} class:list={[
         "flex-1 w-full max-w-2xl mx-auto px-4 pb-24 text-[17px]",
         contentTopPadding,

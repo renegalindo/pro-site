@@ -16,7 +16,7 @@ const rest = projects.filter((p) => p.slug !== 'intro');
 
 <BaseLayout title="Deck" description="Slide-deck prototype" hideFooter>
   <div class="space-y-8">
-    <div class="space-y-4 text-gray-700 leading-relaxed">
+    <div class="space-y-4 text-gray-900 leading-relaxed">
       <p>
         A one-slide-at-a-time presentation prototype — a drawer that rises over
         the page, steps through media with arrow keys, and presents fullscreen.
@@ -31,7 +31,7 @@ const rest = projects.filter((p) => p.slug !== 'intro');
 
     <section>
       <h2 class="mt-8 mb-2 pb-1 text-base text-gray-500">Sections</h2>
-      <ul class="flex flex-col gap-4 text-gray-700 sm:gap-2.5 sm:pr-4">
+      <ul class="flex flex-col gap-4 text-gray-900 sm:gap-2.5 sm:pr-4">
         {rest.map((p) => (
           // Internal link (external defaults false) → the client router runs the
           // drawer-open transition into the deck.
