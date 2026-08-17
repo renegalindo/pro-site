@@ -17,7 +17,6 @@ interface Props {
   /** Year (or range) shown right of the role on the meta line. */
   year?: string;
   backLink?: { href: string; label: string };
-  nextLink?: { href: string; label: string };
   hideFooter?: boolean;
 }
 
@@ -29,7 +28,6 @@ const {
   role,
   year,
   backLink,
-  nextLink,
   hideFooter = false,
 } = Astro.props;
 
@@ -43,10 +41,9 @@ const meta = [role, year].filter(Boolean).join(' · ');
   pageTitle={pageTitle}
   pageTagline={pageTagline}
   backLink={backLink}
-  nextLink={nextLink}
   hideFooter={hideFooter}
 >
-  <article class="prose" data-escape-back={backLink?.href}>
+  <article class="prose">
     <slot />
     {/* Rendered last, but CSS `order` lifts it above the gallery (see .meta). */}
     {meta && <p class="meta">{meta}</p>}
@@ -133,26 +130,3 @@ const meta = [role, year].filter(Boolean).join(' · ');
     @apply my-0 w-full min-w-0 flex-1;
   }
 </style>
-
-<script>
-  // Escape returns to the article's back link, when one is set. Reads the href
-  // off the article's data attribute so it isn't tied to any specific route.
-  document.addEventListener('astro:page-load', () => {
-    const article = document.querySelector<HTMLElement>('article.prose[data-escape-back]');
-    const backHref = article?.dataset.escapeBack;
-    if (!backHref) return;
-
-    const controller = new AbortController();
-    document.addEventListener('keydown', (e) => {
-      if (e.key !== 'Escape') return;
-      // Defer while a modal (e.g. the image lightbox) is open — there, Escape
-      // dismisses the overlay rather than leaving the article.
-      if (document.documentElement.hasAttribute('data-modal-open')) return;
-      e.preventDefault();
-      e.stopPropagation();
-      window.location.href = backHref;
-    }, { signal: controller.signal, capture: true });
-
-    document.addEventListener('astro:before-preparation', () => controller.abort(), { once: true });
-  });
-</script>

@@ -6,7 +6,7 @@ role: "Lead Product Designer"
 year: "2016-2018"
 order: 4
 logo: "/logos/cabify_logo.jpeg"
-published: true
+published: false
 externalUrl: "https://cabify.com/"
 ---
 

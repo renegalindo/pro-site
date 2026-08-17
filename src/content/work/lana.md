@@ -6,7 +6,7 @@ role: "Co-founder, Head of Design"
 year: "2018-2021"
 order: 3
 logo: "/logos/lana_app_logo.jpeg"
-published: true
+published: false
 externalUrl: "https://www.linkedin.com/company/lana-app/"
 ---
 

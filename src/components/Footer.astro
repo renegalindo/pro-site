@@ -1,35 +1,23 @@
 ---
-import { ArrowLeft, ArrowRight } from 'lucide-astro';
+import { ArrowLeft } from 'lucide-astro';
 
 interface Props {
   backLink?: {
     href: string;
     label: string;
   };
-  nextLink?: {
-    href: string;
-    label: string;
-  };
 }
 
-const { backLink, nextLink } = Astro.props;
+const { backLink } = Astro.props;
 ---
 
 <footer class="fixed bottom-0 left-0 right-0 bg-gray-50 w-full">
   <div class="w-full max-w-2xl mx-auto px-4 py-6 border-t border-gray-200/60">
-    <div class="flex items-center justify-between text-sm text-gray-500">
-      <div>
-        {backLink && (
-          <a href={backLink.href} class="hit-target flex items-center gap-1.5 hover:text-gray-600 transition-colors">
-            <ArrowLeft size={16} />
-            {backLink.label}
-          </a>
-        )}
-      </div>
-      {nextLink && (
-        <a href={nextLink.href} class="hit-target flex items-center gap-1.5 hover:text-gray-600 transition-colors">
-          {nextLink.label}
-          <ArrowRight size={16} />
+    <div class="flex items-center text-sm text-gray-500">
+      {backLink && (
+        <a href={backLink.href} class="hit-target flex items-center gap-1.5 hover:text-gray-600 transition-colors">
+          <ArrowLeft size={16} />
+          {backLink.label}
         </a>
       )}
     </div>

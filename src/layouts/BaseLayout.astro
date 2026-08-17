@@ -19,10 +19,6 @@ interface Props {
     href: string;
     label: string;
   };
-  nextLink?: {
-    href: string;
-    label: string;
-  };
   rail?: { heading?: string; items: RailItem[] };
   /** Opt out of the staggered content reveal — for full-screen takeover pages
       (e.g. the portfolio deck) that aren't a stack of document blocks and own
@@ -39,7 +35,6 @@ const {
   pageTagline,
   hideFooter = false,
   backLink,
-  nextLink,
   rail,
   noStagger = false,
 } = Astro.props;
@@ -224,7 +219,7 @@ const contentTopPadding = showPageHeader
   <body class="bg-gray-50 text-gray-900 antialiased">
     <div class="min-h-screen flex flex-col">
       <Header hidden={!showNavHeader} />
-      {showPageHeader && <PageHeader title={pageTitle!} tagline={pageTagline} />}
+      {showPageHeader && <PageHeader title={pageTitle!} tagline={pageTagline} backLink={backLink} />}
       <main data-no-stagger={noStagger ? '' : undefined} class:list={[
         "flex-1 w-full max-w-2xl mx-auto px-4 pb-24 text-[17px]",
         contentTopPadding,
@@ -232,7 +227,7 @@ const contentTopPadding = showPageHeader
         <slot />
       </main>
       {!hideFooter && (
-        <Footer backLink={backLink} nextLink={nextLink} transition:persist />
+        <Footer backLink={backLink} transition:persist />
       )}
     </div>
 

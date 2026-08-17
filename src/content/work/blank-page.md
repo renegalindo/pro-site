@@ -5,7 +5,7 @@ year: "Now"
 sideProject: true
 order: 1
 logo: "/app-icons/blank-page.svg"
-published: true
+published: false
 externalUrl: "https://blank.page/"
 ---
 

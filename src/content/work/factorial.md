@@ -6,7 +6,7 @@ role: "Product Designer"
 year: "2024-2025"
 order: 1
 logo: "/logos/factorial_logo.jpeg"
-published: true
+published: false
 externalUrl: "https://factorialhr.com/"
 ---
 

@@ -38,7 +38,10 @@
     -webkit-backdrop-filter: blur(8px);
     opacity: 0;
     transition: opacity 0.3s ease-out;
-    cursor: zoom-out;
+    /* Default arrow (not zoom-out) on the dim: zoom-out belongs to the image —
+       the thing that collapses back down. The surrounding area stays neutral;
+       it still closes on click, but doesn't advertise itself as a control. */
+    cursor: default;
   }
   .lightbox[data-open] .lightbox-backdrop {
     opacity: 1;
@@ -65,13 +68,12 @@
 
   .lightbox-counter {
     position: absolute;
-    bottom: 1.25rem;
+    bottom: 1rem;
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.8125rem;
     font-variant-numeric: tabular-nums;
     color: #6b7280;
-    background: rgba(255, 255, 255, 0.7);
     padding: 0.25rem 0.625rem;
     border-radius: 9999px;
     opacity: 0;
@@ -207,18 +209,33 @@
       });
     };
 
-    const showThumb = (el: HTMLElement | null) => {
-      if (el) el.style.visibility = '';
+    // Thumbnails are hidden/revealed by opacity (not `visibility`) so navigation
+    // can fade them instead of popping — during a swipe the outgoing thumbnail
+    // reappears and the incoming one hides behind the backdrop, and an instant
+    // toggle there reads as an abrupt flicker. `animate` opts into the fade via
+    // an inline transition; the instant path (open/close/restore) clears that
+    // inline transition so a thumbnail's own CSS transition (e.g. the /now
+    // box-shadow) is left untouched at rest.
+    const THUMB_FADE = 'opacity 200ms ease';
+    const showThumb = (el: HTMLElement | null, animate = false) => {
+      if (!el) return;
+      el.style.transition = animate ? THUMB_FADE : '';
+      el.style.opacity = '';
     };
-    const hideThumb = (el: HTMLElement | null) => {
-      if (el) el.style.visibility = 'hidden';
+    const hideThumb = (el: HTMLElement | null, animate = false) => {
+      if (!el) return;
+      el.style.transition = animate ? THUMB_FADE : '';
+      el.style.opacity = '0';
     };
     // Un-hide every thumbnail. Re-resolves from the live DOM (not the cached
     // `gallery`) so it also covers page-transition / bfcache teardown, where the
     // collected list can reference a swapped-out document. Restoring all — rather
     // than only the last-hidden one — means an interrupted sequence can't orphan
     // a thumbnail in the hidden state.
-    const restoreAllThumbs = () => collectGallery().forEach(showThumb);
+    // Arrow wrapper (not point-free): `forEach` would otherwise pass the array
+    // index as `showThumb`'s `animate` arg, re-applying the fade transition on
+    // restore instead of clearing it.
+    const restoreAllThumbs = () => collectGallery().forEach((el) => showThumb(el));
     const swapImage = (el: HTMLImageElement) => {
       image.src = srcOf(el);
       image.alt = el.alt;
@@ -249,17 +266,21 @@
 
       if (prefersReduced()) return;
 
+      // Hold the image invisible until we morph it in.
+      image.style.opacity = '0';
+      // Claim the animation slot before the (possibly async) decode below, so a
+      // close arriving mid-open is queued via `pendingClose` rather than racing.
+      animating = true;
+
       // Measure the settled (contained, centred) rect while invisible, then run
       // the morph from the thumbnail's rect up to it.
-      image.style.opacity = '0';
-      requestAnimationFrame(() => {
+      const startMorph = () => {
         // Drop any lingering animation fill before measuring the target rect.
         image.getAnimations().forEach((a) => a.cancel());
         clearGeometry();
         image.style.opacity = '0';
         const to = image.getBoundingClientRect();
         image.style.opacity = '1';
-        animating = true;
         const anim = morph(from, to, THUMB_RADIUS, OPEN_RADIUS, EASE_OPEN);
         anim.onfinish = () => {
           // Cancel so `fill: both` stops overriding the settled layout, then
@@ -269,7 +290,18 @@
           animating = false;
           runPendingClose();
         };
-      });
+      };
+
+      // Only measure `to` once the image has real pixels. The lightbox image is
+      // `width:auto; object-fit:contain`, so its size comes entirely from the
+      // image's intrinsic dimensions — an undecoded image (bitmap evicted while
+      // the tab was backgrounded) lays out ~0×0, which made the open morph
+      // collapse the thumbnail into a tiny centred dot instead of scaling it up.
+      // Warm images measure right away; cold ones wait for decode first.
+      const ready = image.complete && image.naturalWidth > 0
+        ? Promise.resolve()
+        : image.decode().catch(() => {});
+      ready.then(() => requestAnimationFrame(startMorph));
     };
 
     const close = () => {
@@ -332,8 +364,11 @@
       const prevThumb = gallery[index];
       index = (index + dir + gallery.length) % gallery.length;
       const nextThumb = gallery[index];
-      showThumb(prevThumb);
-      hideThumb(nextThumb);
+      // Fade the underlying thumbnails as they swap roles (instant in reduced
+      // motion). open/close/restore keep the instant, non-animated path.
+      const fade = !prefersReduced();
+      showThumb(prevThumb, fade);
+      hideThumb(nextThumb, fade);
       updateChrome();
       preloadNeighbors();
 
@@ -344,12 +379,15 @@
 
       // Light directional cross-fade between images (distinct from the open
       // morph). Fade the current out toward the travel direction, swap, fade in.
+      // Single <img>, so this is a quick dip: a brisk exit reaches the swap fast
+      // (short empty beat) and a softer, longer entrance lets the next settle.
+      const SLIDE = 16;
       const out = image.animate(
         [
           { opacity: 1, transform: 'translateX(0)' },
-          { opacity: 0, transform: `translateX(${-dir * 24}px)` },
+          { opacity: 0, transform: `translateX(${-dir * SLIDE}px)` },
         ],
-        { duration: 140, easing: 'ease-in', fill: 'forwards' },
+        { duration: 160, easing: 'ease-in', fill: 'forwards' },
       );
       animating = true;
       out.onfinish = () => {
@@ -357,10 +395,10 @@
         swapImage(nextThumb);
         const inn = image.animate(
           [
-            { opacity: 0, transform: `translateX(${dir * 24}px)` },
+            { opacity: 0, transform: `translateX(${dir * SLIDE}px)` },
             { opacity: 1, transform: 'translateX(0)' },
           ],
-          { duration: 200, easing: 'ease-out', fill: 'forwards' },
+          { duration: 240, easing: 'ease-out', fill: 'forwards' },
         );
         inn.onfinish = () => {
           inn.cancel();

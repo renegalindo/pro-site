@@ -6,7 +6,7 @@ role: "Product Designer"
 year: "2021-2023"
 order: 2
 logo: "/logos/invopop_logo.jpeg"
-published: true
+published: false
 externalUrl: "https://invopop.com/"
 ---
 

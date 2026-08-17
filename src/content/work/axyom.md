@@ -3,7 +3,7 @@ title: "Axyom"
 year: "2026"
 order: 0
 logo: "/logos/axyom_logo.png"
-published: true
+published: false
 externalUrl: "https://getaxyom.com/"
 ---
 
