@@ -11,35 +11,28 @@ export async function getStaticPaths() {
   const work = await getCollection('work');
   const ordered = orderedWork(work.filter((p) => p.data.published));
 
-  return ordered.map((project, index) => {
-    // Cycle to the next published study; only offered when there's more than one.
-    const nextProject = ordered.length > 1 ? ordered[(index + 1) % ordered.length] : undefined;
+  return ordered.map((project) => {
     return {
       params: { slug: project.slug },
-      props: { project, nextProject },
+      props: { project },
     };
   });
 }
 
 interface Props {
   project: CollectionEntry<'work'>;
-  nextProject?: CollectionEntry<'work'>;
 }
 
-const { project, nextProject } = Astro.props;
+const { project } = Astro.props;
 const { Content } = await project.render();
-
-const nextLink = nextProject
-  ? { href: `/work/${nextProject.slug}`, label: 'Next' }
-  : undefined;
 ---
 
 <ArticleLayout
   title={project.data.title}
-  description={project.data.tagline}
-  pageTagline={project.data.tagline}
+  description={project.data.description ?? project.data.title}
+  role={project.data.role}
+  year={project.data.year}
   backLink={{ href: '/work', label: 'Work' }}
-  nextLink={nextLink}
   hideFooter
 >
   <Content />

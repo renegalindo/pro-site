@@ -4,15 +4,15 @@ const work = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    // Short lead line shown at the top of the detail page (and used as the
-    // page's meta description). Optional — omit for projects without one yet.
-    tagline: z.string().optional(),
+    // One-line summary used only as metadata — the page's `<meta description>`
+    // and OpenGraph/Twitter description for link sharing. NOT shown on the page
+    // (the write-up lives in the Markdown body). Optional.
+    description: z.string().optional(),
     company: z.string().optional(),
     role: z.string().optional(),
     year: z.string().optional(),
     sideProject: z.boolean().default(false),
     order: z.number().default(0),
-    color: z.string().optional(),
     logo: z.string().optional(),
     // Visibility switch. When true, the project's detail page at /work/<slug>
     // is generated and its card links there. When false (default), the page is

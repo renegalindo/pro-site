@@ -1,6 +1,5 @@
 ---
 title: "Axyom"
-tagline: ""
 year: "2026"
 order: 0
 logo: "/logos/axyom_logo.png"

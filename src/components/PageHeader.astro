@@ -1,13 +1,29 @@
 ---
+import { ChevronLeft } from 'lucide-astro';
+
 interface Props {
   title: string;
   tagline?: string;
+  /** Optional "up one level" link shown as a small eyebrow above the title. */
+  backLink?: { href: string; label: string };
 }
 
-const { title, tagline } = Astro.props;
+const { title, tagline, backLink } = Astro.props;
 ---
 
 <header class="w-full">
+  {/* `!fixed`: the shared `.hit-target` sets `position: relative` (to anchor its
+      tap-area pseudo), which otherwise wins over Tailwind's `.fixed` and leaves
+      the button scrolling with the page. */}
+  {backLink && (
+    <a
+      href={backLink.href}
+      class="hit-target !fixed left-4 top-4 z-40 inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-gray-700 sm:left-6 sm:top-6"
+    >
+      <ChevronLeft size={16} />
+      {backLink.label}
+    </a>
+  )}
   <div class="max-w-2xl mx-auto px-4 pt-24 sm:pt-32">
     <h1 class="text-[2.75rem] font-medium leading-[1.1] tracking-tight text-gray-900">{title}</h1>
     {tagline && (

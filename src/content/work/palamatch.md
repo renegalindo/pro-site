@@ -1,6 +1,5 @@
 ---
 title: "Palamatch"
-tagline: ""
 year: "2026"
 sideProject: true
 order: 1.5

@@ -1,11 +1,10 @@
 ---
 title: "Factorial"
-tagline: "Built and led design system teams"
+description: "Built and led design system teams"
 company: "Factorial"
 role: "Product Designer"
 year: "2024-2025"
 order: 1
-color: "bg-blue-100"
 logo: "/logos/factorial_logo.jpeg"
 published: false
 externalUrl: "https://factorialhr.com/"
