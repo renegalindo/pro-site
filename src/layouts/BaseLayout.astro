@@ -45,6 +45,10 @@ const {
 } = Astro.props;
 
 const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`;
+// Absolute URL of this page, for the canonical link and og:url. `Astro.site`
+// is the production origin set in astro.config; falls back to a relative path
+// if it's ever unset so the build doesn't throw.
+const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.pathname;
 const showNavHeader = !hideHeader && !pageTitle;
 const showPageHeader = !!pageTitle;
 const contentTopPadding = showPageHeader
@@ -204,6 +208,17 @@ const contentTopPadding = showPageHeader
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    {/* OpenGraph + Twitter for link sharing. Text-only for now (no og:image);
+        switch twitter:card to summary_large_image once share images exist. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="René Galindo" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
     <ViewTransitions />
   </head>
   <body class="bg-gray-50 text-gray-900 antialiased">

@@ -1,11 +1,10 @@
 ---
 title: "Palamatch"
-tagline: ""
 year: "2026"
 sideProject: true
 order: 1.5
 logo: "/logos/palamatch_logo.svg"
-published: false
+published: true
 externalUrl: "https://palamatch.com/"
 ---
 

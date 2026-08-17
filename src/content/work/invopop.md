@@ -1,13 +1,12 @@
 ---
 title: "Invopop"
-tagline: "Product and brand from zero to one"
+description: "Product and brand from zero to one"
 company: "Invopop"
 role: "Product Designer"
 year: "2021-2023"
 order: 2
-color: "bg-green-100"
 logo: "/logos/invopop_logo.jpeg"
-published: false
+published: true
 externalUrl: "https://invopop.com/"
 ---
 

@@ -1,12 +1,11 @@
 ---
 title: "Emojinote"
-tagline: "Organize your notes with emoji"
+description: "Organize your notes with emoji"
 year: "2018"
 sideProject: true
 order: 2
-color: "bg-yellow-100"
 logo: "/logos/emojinote_logo.jpeg"
-published: false
+published: true
 externalUrl: "https://www.youtube.com/watch?v=-08PnmPx3zg&t=31s"
 ---
 

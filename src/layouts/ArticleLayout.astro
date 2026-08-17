@@ -1,8 +1,8 @@
 ---
-// Long-form prose page (case study, blog post, etc.). Wraps BaseLayout in its
-// page-title mode and renders slotted content inside a styled `.prose` article.
-// Extracted from the former /work/[slug] route; currently has no consumer —
-// kept as the template for a future blog / portfolio write-up route.
+// Case-study page for /work/<slug>. Wraps BaseLayout in its page-title mode and
+// renders the project's Markdown body (write-up + gallery) inside a styled
+// `.prose` article, followed by a "role · year" meta line that CSS `order`
+// lifts to sit between the write-up and the gallery (see the .meta rule).
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 interface Props {
@@ -12,6 +12,10 @@ interface Props {
   pageTitle?: string;
   /** Tagline shown under the title in the page header. */
   pageTagline?: string;
+  /** Role shown left of the year on the meta line under the write-up. */
+  role?: string;
+  /** Year (or range) shown right of the role on the meta line. */
+  year?: string;
   backLink?: { href: string; label: string };
   nextLink?: { href: string; label: string };
   hideFooter?: boolean;
@@ -22,10 +26,15 @@ const {
   description,
   pageTitle = title,
   pageTagline,
+  role,
+  year,
   backLink,
   nextLink,
   hideFooter = false,
 } = Astro.props;
+
+// Role and year read as a single meta line: "Role · Year". Either may be absent.
+const meta = [role, year].filter(Boolean).join(' · ');
 ---
 
 <BaseLayout
@@ -39,19 +48,29 @@ const {
 >
   <article class="prose" data-escape-back={backLink?.href}>
     <slot />
+    {/* Rendered last, but CSS `order` lifts it above the gallery (see .meta). */}
+    {meta && <p class="meta">{meta}</p>}
   </article>
 </BaseLayout>
 
 <style>
+  /* Flex column so the meta line — rendered last in source — can be lifted above
+     the gallery with `order` (the write-up and meta keep the default order 0 and
+     stay in source order; image paragraphs get order 1). This assumes the page
+     is write-up-then-gallery; interleaved text and images would get grouped. */
   .prose {
     @apply text-gray-900 leading-relaxed;
+    display: flex;
+    flex-direction: column;
   }
 
   /* Image break-out: text stays in the normal reading column, but any paragraph
      holding image(s) escapes it — capped wider than the text and centred on the
      page. Centring is done with margin (not transform) on purpose: the content
-     reveal animates `transform`, which would otherwise clobber the centring. */
+     reveal animates `transform`, which would otherwise clobber the centring.
+     `order: 1` drops the whole gallery below the meta line. */
   .prose :global(p:has(> img)) {
+    order: 1;
     --breakout-w: min(64rem, 100vw - 2rem);
     width: var(--breakout-w);
     margin-left: calc(50% - var(--breakout-w) / 2);
@@ -67,6 +86,13 @@ const {
 
   .prose :global(p) {
     @apply mb-4;
+  }
+
+  /* Role · Year, sitting between the write-up and the gallery (placement via the
+     flex `order` scheme above). Same size as the body, toned down to read as
+     metadata. */
+  .prose .meta {
+    @apply mt-2 mb-0 text-gray-500;
   }
 
   .prose :global(ul) {

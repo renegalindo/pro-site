@@ -1,12 +1,11 @@
 ---
 title: "Blank Page"
-tagline: "The simplest way to write online"
+description: "The simplest way to write online"
 year: "Now"
 sideProject: true
 order: 1
-color: "bg-teal-100"
 logo: "/app-icons/blank-page.svg"
-published: false
+published: true
 externalUrl: "https://blank.page/"
 ---
 

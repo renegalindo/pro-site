@@ -36,8 +36,9 @@ const nextLink = nextProject
 
 <ArticleLayout
   title={project.data.title}
-  description={project.data.tagline}
-  pageTagline={project.data.tagline}
+  description={project.data.description ?? project.data.title}
+  role={project.data.role}
+  year={project.data.year}
   backLink={{ href: '/work', label: 'Work' }}
   nextLink={nextLink}
   hideFooter
