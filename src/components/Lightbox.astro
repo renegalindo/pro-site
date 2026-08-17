@@ -1,12 +1,6 @@
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image preview" tabindex="-1">
   <div class="lightbox-backdrop"></div>
-  <button type="button" class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="Previous image">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-  </button>
   <img class="lightbox-image" id="lightbox-image" alt="" />
-  <button type="button" class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="Next image">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-  </button>
   <div class="lightbox-counter" id="lightbox-counter" aria-live="polite"></div>
 </div>
 
@@ -19,12 +13,13 @@
     align-items: center;
     justify-content: center;
     padding: 3.5rem 1.5rem;
-    /* Closed: unpainted and out of the a11y tree / tab order. Visibility flips
-       instantly on open, and holds through the close animation before hiding
-       (the delay roughly matches the morph duration). */
+    /* Closed: unpainted and out of the a11y tree / tab order. The close morph is
+       driven in JS and only removes `data-open` once it lands on the thumbnail,
+       so visibility can flip instantly in both directions — no lingering delay
+       (which used to leave the full-size image painted for a beat after close). */
     visibility: hidden;
     pointer-events: none;
-    transition: visibility 0s linear 0.4s;
+    transition: visibility 0s;
   }
 
   .lightbox[data-open] {
@@ -63,40 +58,7 @@
       0 12px 40px -8px rgba(0, 0, 0, 0.22);
   }
 
-  /* Nav arrows */
-  .lightbox-nav {
-    position: relative;
-    z-index: 1;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    margin: 0 0.5rem;
-    border-radius: 9999px;
-    color: #111827;
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(10, 10, 10, 0.04);
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease-out 0.1s, background 0.15s ease, transform 0.15s ease;
-  }
-  .lightbox[data-open] .lightbox-nav {
-    opacity: 1;
-  }
-  .lightbox-nav:hover {
-    background: rgba(255, 255, 255, 0.95);
-  }
-  .lightbox-nav:active {
-    transform: scale(0.94);
-  }
-  .lightbox-nav:focus-visible {
-    outline: 2px solid #9ca3af;
-    outline-offset: 2px;
-  }
-  /* Single-image galleries have no arrows or counter. */
-  .lightbox[data-single] .lightbox-nav,
+  /* Single-image galleries have no counter. */
   .lightbox[data-single] .lightbox-counter {
     display: none;
   }
@@ -124,7 +86,6 @@
      while the backdrop and chrome fade out. Declared here — after the
      `[data-open]` rules so it wins — instead of poking inline opacity from JS. */
   .lightbox[data-closing] .lightbox-backdrop,
-  .lightbox[data-closing] .lightbox-nav,
   .lightbox[data-closing] .lightbox-counter {
     opacity: 0;
   }
@@ -133,15 +94,11 @@
     .lightbox {
       padding: 2rem 0.75rem;
     }
-    .lightbox-nav {
-      margin: 0 0.125rem;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .lightbox,
     .lightbox-backdrop,
-    .lightbox-nav,
     .lightbox-counter {
       transition-duration: 0.01ms;
     }
@@ -149,8 +106,21 @@
 </style>
 
 <script>
-  const DURATION = 360;
-  const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  // Morph timing. Duration scales with how far the image actually travels
+  // (thumbnail centre → settled centre) so a corner thumbnail and a centred one
+  // feel like the same gesture instead of the far one launching. Clamped between
+  // a snappy floor and a ceiling; distance is mapped over DURATION_REF px.
+  const MIN_DURATION = 280;
+  const MAX_DURATION = 460;
+  const DURATION_REF = 820;
+  // Open: ease-in-out (cubic) — gentle acceleration out of the thumbnail, gentle
+  // settle into place, so an edge image doesn't launch toward centre.
+  const EASE_OPEN = 'cubic-bezier(0.65, 0, 0.35, 1)';
+  // Close: ease-out (cubic) — leave centre promptly (no slow-start hang, which
+  // would keep the travelling image parked over a neighbouring thumbnail) but
+  // with a gentler initial velocity and a soft tail into the landing, so it
+  // doesn't read as snappy. Same duration as the open.
+  const EASE_CLOSE = 'cubic-bezier(0.33, 1, 0.68, 1)';
   const THUMB_RADIUS = '16px';
   const OPEN_RADIUS = '12px';
 
@@ -161,10 +131,8 @@
   function setupLightbox() {
     const lightbox = document.getElementById('lightbox');
     const image = document.getElementById('lightbox-image') as HTMLImageElement | null;
-    const prevBtn = document.getElementById('lightbox-prev');
-    const nextBtn = document.getElementById('lightbox-next');
     const counter = document.getElementById('lightbox-counter');
-    if (!lightbox || !image || !prevBtn || !nextBtn || !counter) return;
+    if (!lightbox || !image || !counter) return;
 
     // Tag article images as zoomable on every load (markdown can't add the
     // attribute itself). The `/now` snapshots already carry `[data-zoomable]`.
@@ -184,9 +152,15 @@
 
     let gallery: HTMLImageElement[] = [];
     let index = -1;
-    let hiddenThumb: HTMLElement | null = null;
     let lastFocused: HTMLElement | null = null;
     let animating = false;
+    // A close asked for mid-animation is queued here and run when the in-flight
+    // morph/cross-fade settles — dropping it used to strand a hidden thumbnail.
+    let pendingClose = false;
+    // Whether this session was opened from the keyboard. Focus (and its visible
+    // ring) is only returned to the trigger for keyboard opens; a pointer open
+    // that returned focus would paint a keyboard focus ring on the thumbnail.
+    let openedViaKeyboard = false;
 
     // Every `[data-zoomable]` maps to one image (itself, or the one it wraps),
     // collected in document order so navigation follows the page.
@@ -204,14 +178,20 @@
 
     // Animate the image between two on-screen rectangles by its geometry (not a
     // transform scale) so corners and shadow stay crisp throughout the morph.
-    const morph = (from: DOMRect, to: DOMRect, r0: string, r1: string) => {
+    const morph = (from: DOMRect, to: DOMRect, r0: string, r1: string, easing: string) => {
       image.style.position = 'fixed';
+      // Distance-proportional duration: map centre-to-centre travel onto
+      // [MIN, MAX] so perceived velocity stays roughly constant across thumbnails.
+      const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+      const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+      const t = Math.min(Math.hypot(dx, dy) / DURATION_REF, 1);
+      const duration = MIN_DURATION + (MAX_DURATION - MIN_DURATION) * t;
       return image.animate(
         [
           { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, borderRadius: r0 },
           { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px`, borderRadius: r1 },
         ],
-        { duration: DURATION, easing: EASE, fill: 'both' },
+        { duration, easing, fill: 'both' },
       );
     };
 
@@ -233,6 +213,12 @@
     const hideThumb = (el: HTMLElement | null) => {
       if (el) el.style.visibility = 'hidden';
     };
+    // Un-hide every thumbnail. Re-resolves from the live DOM (not the cached
+    // `gallery`) so it also covers page-transition / bfcache teardown, where the
+    // collected list can reference a swapped-out document. Restoring all — rather
+    // than only the last-hidden one — means an interrupted sequence can't orphan
+    // a thumbnail in the hidden state.
+    const restoreAllThumbs = () => collectGallery().forEach(showThumb);
     const swapImage = (el: HTMLImageElement) => {
       image.src = srcOf(el);
       image.alt = el.alt;
@@ -248,11 +234,14 @@
 
       const thumb = gallery[index];
       const from = thumb.getBoundingClientRect();
-      hiddenThumb = thumb;
       hideThumb(thumb);
 
       swapImage(thumb);
       document.documentElement.style.overflow = 'hidden';
+      // Publish a page-level "a modal is open" flag so other components (e.g. the
+      // article's Escape-to-go-back handler) can defer without knowing about this
+      // component by id.
+      document.documentElement.setAttribute('data-modal-open', '');
       updateChrome();
       lightbox.setAttribute('data-open', '');
       lightbox.focus();
@@ -271,29 +260,38 @@
         const to = image.getBoundingClientRect();
         image.style.opacity = '1';
         animating = true;
-        const anim = morph(from, to, THUMB_RADIUS, OPEN_RADIUS);
+        const anim = morph(from, to, THUMB_RADIUS, OPEN_RADIUS, EASE_OPEN);
         anim.onfinish = () => {
           // Cancel so `fill: both` stops overriding the settled layout, then
           // hand the image back to the centred flex flow.
           anim.cancel();
           clearGeometry();
           animating = false;
+          runPendingClose();
         };
       });
     };
 
     const close = () => {
-      if (animating || !lightbox.hasAttribute('data-open')) return;
+      if (!lightbox.hasAttribute('data-open')) return;
+      // Don't drop a close mid-animation — queue it. The open morph and the
+      // nav cross-fade both run it from their onfinish once they settle.
+      if (animating) { pendingClose = true; return; }
       const thumb = gallery[index];
 
       const finish = () => {
+        pendingClose = false;
         lightbox.removeAttribute('data-open');
         lightbox.removeAttribute('data-closing');
         document.documentElement.style.overflow = '';
-        showThumb(hiddenThumb);
-        hiddenThumb = null;
+        document.documentElement.removeAttribute('data-modal-open');
+        restoreAllThumbs();
         clearGeometry();
-        lastFocused?.focus();
+        // Return focus to the trigger only for keyboard opens (where the focus
+        // ring is wanted). For pointer opens, drop focus so no keyboard ring is
+        // painted on the thumbnail after Escape/click close.
+        if (openedViaKeyboard) lastFocused?.focus();
+        else (lastFocused as HTMLElement | null)?.blur?.();
       };
 
       if (prefersReduced() || !thumb) {
@@ -301,10 +299,13 @@
         return;
       }
 
-      // Bring the destination thumbnail into view if navigation left it
-      // off-screen, so the image morphs back to a visible anchor.
+      // Only scroll when the thumbnail is mostly out of view (e.g. navigation
+      // moved it far off-screen), so the image has a visible anchor to morph
+      // back into. A thumbnail that's merely clipped at an edge — the one you
+      // opened and could still see — closes in place, leaving scroll untouched.
       let to = thumb.getBoundingClientRect();
-      if (to.top < 0 || to.bottom > window.innerHeight) {
+      const visible = Math.max(0, Math.min(to.bottom, window.innerHeight) - Math.max(to.top, 0));
+      if (to.height > 0 && visible / to.height < 0.6) {
         thumb.scrollIntoView({ block: 'center' });
         to = thumb.getBoundingClientRect();
       }
@@ -314,13 +315,17 @@
       lightbox.setAttribute('data-closing', '');
 
       animating = true;
-      const anim = morph(from, to, OPEN_RADIUS, THUMB_RADIUS);
+      const anim = morph(from, to, OPEN_RADIUS, THUMB_RADIUS, EASE_CLOSE);
       anim.onfinish = () => {
         anim.cancel();
         animating = false;
         finish();
       };
     };
+
+    // Run a close that arrived mid-animation, now that the animation has settled.
+    // `close` proceeds (animating is already cleared) and `finish` resets the flag.
+    const runPendingClose = () => { if (pendingClose) close(); };
 
     const go = (dir: number) => {
       if (animating || gallery.length <= 1) return;
@@ -329,7 +334,6 @@
       const nextThumb = gallery[index];
       showThumb(prevThumb);
       hideThumb(nextThumb);
-      hiddenThumb = nextThumb;
       updateChrome();
       preloadNeighbors();
 
@@ -363,13 +367,16 @@
           image.style.transform = '';
           image.style.opacity = '';
           animating = false;
+          runPendingClose();
         };
       };
     };
 
     // Resolve a trigger's image to its gallery index and open — collecting the
-    // gallery once (the resolved list is what `open` then works from).
-    const openFromTrigger = (img: HTMLImageElement) => {
+    // gallery once (the resolved list is what `open` then works from). Records
+    // how it was opened so close can decide whether to return the focus ring.
+    const openFromTrigger = (img: HTMLImageElement, viaKeyboard: boolean) => {
+      openedViaKeyboard = viaKeyboard;
       gallery = collectGallery();
       open(gallery.indexOf(img));
     };
@@ -382,24 +389,19 @@
       const img = trigger instanceof HTMLImageElement ? trigger : trigger.querySelector('img');
       if (!img) return;
       e.preventDefault();
-      openFromTrigger(img as HTMLImageElement);
+      openFromTrigger(img as HTMLImageElement, false);
     });
 
     document.addEventListener('keydown', (e) => {
       const active = document.activeElement as HTMLElement | null;
       if (!lightbox.hasAttribute('data-open') && active?.matches('[data-zoomable]') && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault();
-        openFromTrigger(active as HTMLImageElement);
+        openFromTrigger(active as HTMLImageElement, true);
       }
     });
 
-    // Arrows navigate and must not bubble to the backdrop/image close handler.
-    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
-    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); });
-
-    // Click anywhere else in the overlay (backdrop or the image) closes it.
-    lightbox.addEventListener('click', (e) => {
-      if ((e.target as HTMLElement).closest('.lightbox-nav')) return;
+    // Click anywhere in the overlay (backdrop or the image) closes it.
+    lightbox.addEventListener('click', () => {
       close();
     });
 
@@ -421,6 +423,12 @@
       if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
       else if (dy > 70) close();
     }, { passive: true });
+
+    // Safety net: if the page transitions away (Astro view transitions) or is
+    // frozen into bfcache while the overlay is open, un-hide every thumbnail so
+    // a restored snapshot never shows a gap where a hidden image used to be.
+    document.addEventListener('astro:before-preparation', restoreAllThumbs);
+    window.addEventListener('pagehide', restoreAllThumbs);
   }
 
   setupLightbox();

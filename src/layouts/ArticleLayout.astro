@@ -119,6 +119,9 @@ const {
     const controller = new AbortController();
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
+      // Defer while a modal (e.g. the image lightbox) is open — there, Escape
+      // dismisses the overlay rather than leaving the article.
+      if (document.documentElement.hasAttribute('data-modal-open')) return;
       e.preventDefault();
       e.stopPropagation();
       window.location.href = backHref;
