@@ -25,6 +25,12 @@ interface Props {
       their own entry animation. (Also avoids the reveal's lingering `transform`
       clobbering the page's own positioning transforms.) */
   noStagger?: boolean;
+  /** When true, this page is unpublished work, gated behind preview mode:
+      `noindex`, and an inline guard that redirects a normal (non-preview)
+      visitor to `previewRedirect`. The `?preview=1` flag unlocks it. */
+  previewGated?: boolean;
+  /** Where the gate sends a non-preview visitor (usually the live product). */
+  previewRedirect?: string;
 }
 
 const {
@@ -37,6 +43,8 @@ const {
   backLink,
   rail,
   noStagger = false,
+  previewGated = false,
+  previewRedirect = '/work',
 } = Astro.props;
 
 const fullTitle = title === 'René Galindo' ? title : `${title} | René Galindo`;
@@ -214,6 +222,27 @@ const contentTopPadding = showPageHeader
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
+    {/* Unpublished work: keep it out of search, and mark it for the preview
+        script (which reads this meta on client-router navigations to re-run the
+        gate — the inline guard below only fires on a hard load). */}
+    {previewGated && <meta name="robots" content="noindex" />}
+    {previewGated && <meta name="x-preview-gated" content={previewRedirect} />}
+    {previewGated && (
+      <script is:inline define:vars={{ to: previewRedirect }}>
+        // Pre-paint gate for a hard load of an unpublished page: if preview mode
+        // isn't on, bounce to the live product before any WIP content renders.
+        // `?preview=1` turns preview on and remembers it for the session.
+        (function () {
+          try {
+            var q = new URLSearchParams(location.search).get('preview');
+            if (q === '1') sessionStorage.setItem('rg:preview', '1');
+            if (q === '0') sessionStorage.removeItem('rg:preview');
+            var on = q === '1' || sessionStorage.getItem('rg:preview') === '1';
+            if (!on) location.replace(to);
+          } catch (e) {}
+        })();
+      </script>
+    )}
     <ViewTransitions />
   </head>
   <body class="bg-gray-50 text-gray-900 antialiased">
@@ -233,7 +262,81 @@ const contentTopPadding = showPageHeader
 
     {rail && <SectionRail heading={rail.heading} items={rail.items} />}
 
+    {/* Preview-mode indicator. Hidden by default; the preview script reveals it
+        whenever the session flag is on. Links out with `?preview=0`, which the
+        gate clears — so this doubles as the exit. Persisted across client-router
+        navigations so it stays put instead of flashing. */}
+    <a
+      id="preview-banner"
+      href="/work?preview=0"
+      hidden
+      transition:persist
+      class="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-gray-900/90 px-3.5 py-1.5 text-sm text-white no-underline shadow-lg backdrop-blur transition-colors hover:bg-gray-900"
+    >
+      Preview mode
+    </a>
+
     <Lightbox transition:persist />
+
+    <script>
+      // Preview mode gate. Runs on every load/navigation so the client router —
+      // which doesn't re-run the inline head guard — stays gated and consistent.
+      // The flag logic lives in @/lib/transitions (shared, testable); the inline
+      // head guard is the one hand-rolled copy, since it must run pre-paint.
+      import { previewActive } from '@/lib/transitions';
+
+      function applyPreview() {
+        const active = previewActive();
+
+        // Gate an unpublished page reached via client-router nav (the inline
+        // head guard only covers hard loads): bounce a non-preview visitor out.
+        const gate = document.querySelector('meta[name="x-preview-gated"]');
+        if (gate && !active) {
+          window.location.replace(gate.getAttribute('content') || '/work');
+          return;
+        }
+
+        // In preview mode, repoint unpublished cards from the live product to
+        // their in-progress detail page (and drop the new-tab behavior).
+        if (active) {
+          document.querySelectorAll('[data-preview-href]').forEach((el) => {
+            const to = el.getAttribute('data-preview-href');
+            if (!to) return;
+            el.setAttribute('href', to);
+            el.removeAttribute('target');
+            el.removeAttribute('rel');
+          });
+        }
+
+        const banner = document.getElementById('preview-banner');
+        if (banner) banner.toggleAttribute('hidden', !active);
+      }
+
+      document.addEventListener('astro:page-load', applyPreview);
+    </script>
+
+    <script>
+      // Kick autoplay videos after every navigation. The `autoplay` attribute
+      // only starts playback when the browser *parses* the page (a full load or
+      // refresh); the client router swaps the DOM in instead, so on an in-app
+      // navigation the element arrives with its source unselected (networkState
+      // NO_SOURCE) and renders blank until reload. Forcing load() re-runs
+      // resource selection, then play() starts it. Muted + playsInline keep this
+      // inside the browser's autoplay policy, so play() isn't blocked.
+      function kickVideos() {
+        document.querySelectorAll('video[autoplay]').forEach((v) => {
+          // Only reload when the swap left it unloaded — otherwise a normal
+          // refresh (autoplay already running) would restart it from the top.
+          if (v.networkState === v.NETWORK_NO_SOURCE || v.readyState === 0) {
+            v.load();
+          }
+          const p = v.play();
+          if (p) p.catch(() => {});
+        });
+      }
+
+      document.addEventListener('astro:page-load', kickVideos);
+    </script>
 
     <script>
       import { consumeSuppressNextReveal } from '@/lib/transitions';

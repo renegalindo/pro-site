@@ -15,10 +15,12 @@ const sections = [
 // A published project links in-tab to its /work/<slug> detail page; an
 // unpublished one links straight out to the live product in a new tab.
 // Resolving the destination here keeps ProjectCard dumb about the switch.
+// Unpublished cards also carry `previewHref` — their in-progress detail page —
+// so the preview script can swap the outbound link when preview mode is on.
 const linkFor = (project) =>
   project.data.published
     ? { href: `/work/${project.slug}`, external: false }
-    : { href: project.data.externalUrl, external: true };
+    : { href: project.data.externalUrl, external: true, previewHref: `/work/${project.slug}` };
 ---
 
 <BaseLayout title="Work" description="Design work by René Galindo" hideFooter>

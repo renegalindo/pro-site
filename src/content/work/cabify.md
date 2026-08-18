@@ -10,11 +10,6 @@ published: false
 externalUrl: "https://cabify.com/"
 ---
 
-## Overview
+Cabify is one of the largest ride-hailing companies in Spain and Latin America. I joined as the second product designer and led design for the rider app and the purple rebrand. I also helped hire and onboard the team as it grew from 2 to 8 designers, before moving to the new business division, where I worked on Movo and [Lana](/work/lana).
 
-<!-- A short paragraph or two: what the project was, my role, and the outcome. -->
-
-## Highlights
-
-<!-- A few images with short captions. Markdown images work here:
-     ![Short caption](/path/to/image.png) -->
+![Cabify rebrand animation](/portfolio/cabify-animation.mp4)

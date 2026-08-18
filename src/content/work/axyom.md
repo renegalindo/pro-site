@@ -7,11 +7,6 @@ published: false
 externalUrl: "https://getaxyom.com/"
 ---
 
-## Overview
+_Draft intro coming soon._
 
-<!-- A short paragraph or two: what the project was, my role, and the outcome. -->
-
-## Highlights
-
-<!-- A few images with short captions. Markdown images work here:
-     ![Short caption](/path/to/image.png) -->
+![Axyom — placeholder](/portfolio/ph-wide.svg)

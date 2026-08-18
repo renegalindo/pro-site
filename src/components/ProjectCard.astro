@@ -12,9 +12,14 @@ interface Props {
   /** External links open in a new tab; internal deck links stay in-tab so the
       client router runs the drawer transition. Ignored when there's no href. */
   external?: boolean;
+  /** Internal /work/<slug> destination for an unpublished card. Emitted as a
+      `data-preview-href` hook so the preview script (see BaseLayout) can swap
+      the row's outbound link for its in-progress detail page when preview mode
+      is on. Omitted for published cards, which already link internally. */
+  previewHref?: string;
 }
 
-const { title, year, logo, href, external = false } = Astro.props;
+const { title, year, logo, href, external = false, previewHref } = Astro.props;
 
 const period = year?.replace(/-20/, '-');
 // Without a destination the title is plain text (no dead link).
@@ -34,6 +39,7 @@ const opensInNewTab = isLinked && external;
     href={href}
     target={opensInNewTab ? '_blank' : undefined}
     rel={opensInNewTab ? 'noopener noreferrer' : undefined}
+    data-preview-href={previewHref}
     class={`${interactive}block w-fit rounded-sm no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300`}
   >
     <AppIconLabel icon={logo} label={title} />

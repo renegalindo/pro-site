@@ -5,11 +5,13 @@ import ArticleLayout from '@/layouts/ArticleLayout.astro';
 import { orderedWork } from '@/lib/work';
 
 export async function getStaticPaths() {
-  // Only published projects get a page. Unpublished ones link straight out from
-  // the list (see ProjectCard wiring in work/index.astro), so building a page
-  // for them would expose in-progress work at a guessable URL.
+  // Build a page for every project, published or not. Unpublished pages are
+  // soft-gated (see BaseLayout's preview wiring): they carry `noindex` and an
+  // inline guard that redirects a normal visitor straight to the live product,
+  // so in-progress work still isn't reachable by guessing a URL — but the
+  // `?preview=1` flag unlocks them for reading drafts before they ship.
   const work = await getCollection('work');
-  const ordered = orderedWork(work.filter((p) => p.data.published));
+  const ordered = orderedWork(work);
 
   return ordered.map((project) => {
     return {
@@ -34,6 +36,8 @@ const { Content } = await project.render();
   year={project.data.year}
   backLink={{ href: '/work', label: 'Work' }}
   hideFooter
+  previewGated={!project.data.published}
+  previewRedirect={project.data.externalUrl ?? '/work'}
 >
   <Content />
 </ArticleLayout>

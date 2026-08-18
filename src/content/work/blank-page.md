@@ -9,11 +9,6 @@ published: false
 externalUrl: "https://blank.page/"
 ---
 
-## Overview
+_Draft intro coming soon._
 
-<!-- A short paragraph or two: what the project was, my role, and the outcome. -->
-
-## Highlights
-
-<!-- A few images with short captions. Markdown images work here:
-     ![Short caption](/path/to/image.png) -->
+![Blank Page — placeholder](/portfolio/ph-wide.svg)

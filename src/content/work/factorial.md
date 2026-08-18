@@ -2,7 +2,7 @@
 title: "Factorial"
 description: "Built and led design system teams"
 company: "Factorial"
-role: "Product Designer"
+role: "Product Design Director"
 year: "2024-2025"
 order: 1
 logo: "/logos/factorial_logo.jpeg"
@@ -10,11 +10,10 @@ published: false
 externalUrl: "https://factorialhr.com/"
 ---
 
-## Overview
+Factorial is an all-in-one HR platform. I led a platform-wide redesign called Factorial One that aimed to radically unify the product surface and help teams ship faster.
 
-<!-- A short paragraph or two: what the project was, my role, and the outcome. -->
+Inspired by Notion's block model and Shadcn's UI primitives, we set out to streamline the navigation and dozens of components that had fragmented over time. At its core, Factorial One encouraged designers to embrace constraints as the key to a consistent user experience: instead of designing ad-hoc interfaces for every surface, we could solve many different problems with a small set of shared building blocks.
 
-## Highlights
+The redesign shipped as the biggest design update since the company's founding and set the path to keep scaling 30 products without reinventing the wheel for every new feature.
 
-<!-- A few images with short captions. Markdown images work here:
-     ![Short caption](/path/to/image.png) -->
+![Factorial](/portfolio/factorial-video.mp4#controls)
