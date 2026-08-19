@@ -3,7 +3,9 @@ import { defineCollection, z } from 'astro:content';
 const work = defineCollection({
   type: 'content',
   schema: z.object({
-    title: z.string(),
+    // The project/company name shown as the card label and page heading.
+    // Named `name` (not `title`) to avoid confusion with `role`, the job title.
+    name: z.string(),
     // One-line summary used only as metadata — the page's `<meta description>`
     // and OpenGraph/Twitter description for link sharing. NOT shown on the page
     // (the write-up lives in the Markdown body). Optional.
@@ -11,16 +13,27 @@ const work = defineCollection({
     company: z.string().optional(),
     role: z.string().optional(),
     year: z.string().optional(),
-    sideProject: z.boolean().default(false),
+    // What the work was, which drives the Work page's grouping (Clients first,
+    // then Companies, then Personal). Required, so every project declares it:
+    //   client   — fractional / Design Partner work for a client (my current mode)
+    //   company  — an employed/founding role at a company; also notable products
+    //              from a role, like Movo
+    //   personal — my own side projects
+    // Within each group, cards are ordered newest-first (by `year`).
+    type: z.enum(['client', 'company', 'personal']),
+    // Tiebreaker for two entries that share a year within a group (e.g. two 2026
+    // client projects); lower sorts first. Recency (from `year`) does the real
+    // ordering, so most projects can omit this.
     order: z.number().default(0),
     logo: z.string().optional(),
-    // Visibility switch. When true, the project's detail page at /work/<slug>
-    // is generated and its card links there. When false (default), the page is
-    // not built and the card links straight out to `externalUrl` (new tab), so
-    // in-progress work can't be reached even by direct URL.
+    // Visibility switch for the detail page. When true, /work/<slug> is a public
+    // page. When false (default), it's gated behind preview mode (noindex +
+    // redirect for a normal visitor) so in-progress drafts stay hidden. Either
+    // way the work-list card links out to `externalUrl` — the detail pages are
+    // reached directly, not from the list.
     published: z.boolean().default(false),
-    // Where an unpublished card links to (the live product). Also shown as the
-    // outbound link inside a published detail page.
+    // The live product URL. Every card links here (new tab); also shown as the
+    // outbound link inside a detail page.
     externalUrl: z.string().url().optional(),
   }),
 });

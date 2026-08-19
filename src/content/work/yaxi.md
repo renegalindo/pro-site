@@ -1,12 +1,12 @@
 ---
-title: "Yaxi"
+name: "Yaxi"
 description: "The first taxi app in Mexico"
 company: "Yaxi"
 role: "Product Designer"
 year: "2014-2015"
-order: 5
+type: company
 logo: "/logos/yaxi_logo.jpeg"
-published: false
+published: true
 externalUrl: "https://www.linkedin.com/company/yaxii/"
 ---
 

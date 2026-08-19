@@ -1,12 +1,13 @@
 ---
-title: "Lana"
+name: "Lana"
 description: "Founding designer, from zero to one"
 company: "Lana"
 role: "Lead Product Designer"
 year: "2018-2021"
-order: 3
+type: company
+order: 1
 logo: "/logos/lana_app_logo.jpeg"
-published: false
+published: true
 externalUrl: "https://www.linkedin.com/company/lana-app/"
 ---
 

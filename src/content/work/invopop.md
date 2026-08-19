@@ -1,12 +1,12 @@
 ---
-title: "Invopop"
+name: "Invopop"
 description: "Product and brand from zero to one"
 company: "Invopop"
 role: "Founding Designer"
 year: "2021-2023"
-order: 2
+type: company
 logo: "/logos/invopop_logo.jpeg"
-published: false
+published: true
 externalUrl: "https://invopop.com/"
 ---
 

@@ -1,9 +1,8 @@
 ---
-title: "Blank Page"
+name: "Blank Page"
 description: "The simplest way to write online"
 year: "Now"
-sideProject: true
-order: 1
+type: personal
 logo: "/app-icons/blank-page.svg"
 published: false
 externalUrl: "https://blank.page/"

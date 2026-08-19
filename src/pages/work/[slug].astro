@@ -30,8 +30,8 @@ const { Content } = await project.render();
 ---
 
 <ArticleLayout
-  title={project.data.title}
-  description={project.data.description ?? project.data.title}
+  title={project.data.name}
+  description={project.data.description ?? project.data.name}
   role={project.data.role}
   year={project.data.year}
   backLink={{ href: '/work', label: 'Work' }}

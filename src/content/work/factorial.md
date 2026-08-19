@@ -1,12 +1,12 @@
 ---
-title: "Factorial"
+name: "Factorial"
 description: "Built and led design system teams"
 company: "Factorial"
 role: "Product Design Director"
 year: "2024-2025"
-order: 1
+type: company
 logo: "/logos/factorial_logo.jpeg"
-published: false
+published: true
 externalUrl: "https://factorialhr.com/"
 ---
 

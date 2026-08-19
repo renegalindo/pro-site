@@ -1,12 +1,12 @@
 ---
-title: "Cabify"
+name: "Cabify"
 description: "Led rebrand, Rider app, and Movo"
 company: "Cabify"
 role: "Lead Product Designer"
 year: "2016-2018"
-order: 4
+type: company
 logo: "/logos/cabify_logo.jpeg"
-published: false
+published: true
 externalUrl: "https://cabify.com/"
 ---
 
