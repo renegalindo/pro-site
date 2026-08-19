@@ -26,13 +26,12 @@ const work = defineCollection({
     // ordering, so most projects can omit this.
     order: z.number().default(0),
     logo: z.string().optional(),
-    // Visibility switch for the detail page. When true, /work/<slug> is a public
-    // page. When false (default), it's gated behind preview mode (noindex +
-    // redirect for a normal visitor) so in-progress drafts stay hidden. Either
-    // way the work-list card links out to `externalUrl` — the detail pages are
-    // reached directly, not from the list.
+    // Visibility switch. When true, /work/<slug> is a public page and its card
+    // links to it. When false (default), the page is gated behind preview mode
+    // (noindex + redirect for a normal visitor) and the card links straight out
+    // to `externalUrl` instead, so in-progress drafts stay hidden.
     published: z.boolean().default(false),
-    // The live product URL. Every card links here (new tab); also shown as the
+    // The live product URL. A draft card links here (new tab); also shown as the
     // outbound link inside a detail page.
     externalUrl: z.string().url().optional(),
   }),

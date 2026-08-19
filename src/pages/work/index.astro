@@ -13,17 +13,13 @@ const sections = [
   { label: 'Personal', items: personal },
 ].filter((section) => section.items.length > 0);
 
-// Every card links out to the live product in a new tab — the products are the
-// destination, not the case-study pages. Unpublished (draft) projects also carry
-// `previewHref` so the preview script can swap the row to its in-progress detail
-// page; published projects' detail pages are public and reached directly.
-const linkFor = (project) => ({
-  href: project.data.externalUrl,
-  external: true,
-  // Drafts also carry an internal `previewHref` so the preview script can swap
-  // the row to its in-progress detail page; published pages are reached directly.
-  ...(project.data.published ? {} : { previewHref: `/work/${project.slug}` }),
-});
+// A published project links in-tab to its /work/<slug> case study. A draft links
+// straight out to the live product in a new tab, and carries `previewHref` so the
+// preview script can swap the row to its in-progress detail page when preview is on.
+const linkFor = (project) =>
+  project.data.published
+    ? { href: `/work/${project.slug}`, external: false }
+    : { href: project.data.externalUrl, external: true, previewHref: `/work/${project.slug}` };
 ---
 
 <BaseLayout title="Work" description="Design work by René Galindo" hideFooter>
