@@ -11,6 +11,8 @@ published: true
 externalUrl: "https://www.linkedin.com/company/lana-app/"
 ---
 
-Lana was a wallet app and fintech marketplace built for the underbanked in Latin America. It started inside [Cabify](/work/cabify) after we realized many drivers joining didn't have a bank account, then spun off into its own company to serve the broader gig economy. I was a co-founder and led product design and brand for its first three years. We launched in Mexico, Peru and Chile with over 15,000 users.
+Lana was a wallet app and fintech marketplace built for the underbanked in Latin America. It started inside [Cabify](/work/cabify) after we noticed many drivers joining didn't have a bank account, then spun off to serve the broader gig economy. I was a co-founder and led product design and brand for its first three years.
+
+The architecture borrowed from WeChat's superapp model, where each mini app opened as a webview to select a service, then returned to the native core to sign the transaction. The same shell rendered different apps depending on the country, which enabled us to launch in Mexico, Peru and Chile with 15,000 accounts.
 
 ![Lana home screen](/portfolio/lana-home.webp)
