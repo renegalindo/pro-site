@@ -316,22 +316,27 @@ const contentTopPadding = showPageHeader
     </script>
 
     <script>
-      // Kick autoplay videos after every navigation. The `autoplay` attribute
-      // only starts playback when the browser *parses* the page (a full load or
-      // refresh); the client router swaps the DOM in instead, so on an in-app
-      // navigation the element arrives with its source unselected (networkState
-      // NO_SOURCE) and renders blank until reload. Forcing load() re-runs
-      // resource selection, then play() starts it. Muted + playsInline keep this
-      // inside the browser's autoplay policy, so play() isn't blocked.
+      // Kick videos after every navigation. Resource selection only runs when
+      // the browser *parses* the page (a full load or refresh); the client
+      // router swaps the DOM in instead, so on an in-app navigation a video
+      // arrives with its source unselected (networkState NO_SOURCE) and renders
+      // blank until reload. This bites both modes: an autoplay clip never starts,
+      // and a controls clip (preload="metadata") never fetches its first frame.
+      // Forcing load() re-runs resource selection for any unloaded video; then we
+      // additionally play() the autoplay ones (muted + playsInline keep that
+      // inside the browser's autoplay policy, so play() isn't blocked). Controls
+      // clips are user-driven, so we load() them but leave playback to the user.
       function kickVideos() {
-        document.querySelectorAll('video[autoplay]').forEach((v) => {
+        document.querySelectorAll('video').forEach((v) => {
           // Only reload when the swap left it unloaded — otherwise a normal
-          // refresh (autoplay already running) would restart it from the top.
+          // refresh (source already selected) would restart it from the top.
           if (v.networkState === v.NETWORK_NO_SOURCE || v.readyState === 0) {
             v.load();
           }
-          const p = v.play();
-          if (p) p.catch(() => {});
+          if (v.autoplay) {
+            const p = v.play();
+            if (p) p.catch(() => {});
+          }
         });
       }
 
