@@ -15,4 +15,4 @@ Blank Page is the simplest place to write and publish online.
 
 I build and maintain it because most text editors are bloated with features that make writing harder than it needs to be. Blank Page keeps only the essentials to think and write clearly: no setup, no file systems, no clutter. It's the writing app I want to use myself.
 
-![Blank Page — placeholder](/portfolio/ph-wide.svg)
+![Blank Page](/portfolio/blankpage-projects.mp4)
