@@ -17,16 +17,17 @@ const { title, tagline, backLink } = Astro.props;
       the button scrolling with the page. */}
   {backLink && (
     <Fragment>
-      {/* Scrim behind the fixed back link. On mobile the content column is
-          full-width, so scrolled body text would otherwise pass straight
-          behind the transparent link and collide with it. Mirrors the nav
-          header's bg-gray-50 backdrop, but as a soft top-down fade (iOS
-          large-title style) so content dissolves under the link instead of
-          meeting a hard edge — legible without breaking the minimal feel.
-          `pointer-events-none` so it never swallows a tap. */}
+      {/* Scrim behind the fixed back link — mobile only (`sm:hidden`). On a
+          phone the content column is full-width, so scrolled body text would
+          otherwise pass straight behind the transparent link and collide with
+          it; on desktop the link sits out in the wide margin, clear of the
+          centred text, so no scrim is needed. Mirrors the nav header's
+          bg-gray-50 backdrop, but as a soft top-down fade (iOS large-title
+          style) so content dissolves under the link instead of meeting a hard
+          edge. `pointer-events-none` so it never swallows a tap. */}
       <div
         aria-hidden="true"
-        class="pointer-events-none fixed inset-x-0 top-0 z-30 h-20 bg-gradient-to-b from-gray-50 from-40% to-transparent"
+        class="pointer-events-none fixed inset-x-0 top-0 z-30 h-20 bg-gradient-to-b from-gray-50 from-40% to-transparent sm:hidden"
       />
       <a
         href={backLink.href}

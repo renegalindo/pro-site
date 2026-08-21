@@ -34,6 +34,8 @@ const { Content } = await project.render();
   description={project.data.description ?? project.data.name}
   role={project.data.role}
   year={project.data.year}
+  externalUrl={project.data.cta ? project.data.externalUrl : undefined}
+  ctaLabel={project.data.ctaLabel}
   backLink={{ href: '/work', label: 'Work' }}
   hideFooter
   previewGated={!project.data.published}

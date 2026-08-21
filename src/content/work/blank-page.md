@@ -7,6 +7,8 @@ type: personal
 logo: "/app-icons/blank-page.svg"
 published: true
 externalUrl: "https://blank.page/"
+cta: true
+ctaLabel: "Try it"
 ---
 
 Blank Page is the simplest place to write and publish online.
