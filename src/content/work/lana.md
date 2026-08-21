@@ -2,8 +2,8 @@
 name: "Lana"
 description: "Founding designer, from zero to one"
 company: "Lana"
-role: "Lead Product Designer"
-year: "2018-2021"
+role: "Design Lead"
+year: "2019-2021"
 type: company
 order: 1
 logo: "/logos/lana_app_logo.jpeg"

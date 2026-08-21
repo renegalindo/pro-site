@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 import rehypeExternalLinks from 'rehype-external-links';
-import rehypeVideo from './src/lib/rehype-video.mjs';
+import rehypeMedia from './src/lib/rehype-media.mjs';
 
 export default defineConfig({
   site: 'https://renegalindo.com',
@@ -28,7 +28,7 @@ export default defineConfig({
   integrations: [tailwind()],
   markdown: {
     rehypePlugins: [
-      rehypeVideo,
+      rehypeMedia,
       [rehypeExternalLinks, { target: '_blank', rel: ['noopener', 'noreferrer'] }],
     ],
   },

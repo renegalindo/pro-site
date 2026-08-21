@@ -112,11 +112,15 @@ const meta = [role, year].filter(Boolean).join(' · ');
     @apply underline hover:text-gray-600;
   }
 
-  /* Images and videos: centered, rounded, and height-capped so a tall phone
-     screenshot doesn't run away vertically. `max-w-full` keeps wide media in
-     the column. */
+  /* Images and videos: centered and rounded. Width (and thus the 75vh height
+     cap, container fit, and no-upscale) is set per element as an inline
+     `width: min(…)` by the media rehype plugin, computed from the file's real
+     dimensions so the box reserves its space before the file loads — no layout
+     shift, which keeps scroll restoration intact on back/forward. `height: auto`
+     lets that width drive height via the element's aspect ratio. */
   .prose :global(:is(img, video)) {
-    @apply block mx-auto my-16 max-h-[75vh] max-w-full w-auto rounded-2xl;
+    @apply block mx-auto my-16 rounded-2xl;
+    height: auto;
   }
   /* `data-zoomable` is added by the lightbox once it wires the image up, so the
      zoom cursor only shows when the image is actually interactive. */

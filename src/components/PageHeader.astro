@@ -16,13 +16,26 @@ const { title, tagline, backLink } = Astro.props;
       tap-area pseudo), which otherwise wins over Tailwind's `.fixed` and leaves
       the button scrolling with the page. */}
   {backLink && (
-    <a
-      href={backLink.href}
-      class="hit-target !fixed left-4 top-4 z-40 inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-gray-700 sm:left-6 sm:top-6"
-    >
-      <ChevronLeft size={16} />
-      {backLink.label}
-    </a>
+    <Fragment>
+      {/* Scrim behind the fixed back link. On mobile the content column is
+          full-width, so scrolled body text would otherwise pass straight
+          behind the transparent link and collide with it. Mirrors the nav
+          header's bg-gray-50 backdrop, but as a soft top-down fade (iOS
+          large-title style) so content dissolves under the link instead of
+          meeting a hard edge — legible without breaking the minimal feel.
+          `pointer-events-none` so it never swallows a tap. */}
+      <div
+        aria-hidden="true"
+        class="pointer-events-none fixed inset-x-0 top-0 z-30 h-20 bg-gradient-to-b from-gray-50 from-40% to-transparent"
+      />
+      <a
+        href={backLink.href}
+        class="hit-target !fixed left-4 top-4 z-40 inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-gray-700 sm:left-6 sm:top-6"
+      >
+        <ChevronLeft size={16} />
+        {backLink.label}
+      </a>
+    </Fragment>
   )}
   <div class="max-w-2xl mx-auto px-4 pt-24 sm:pt-32">
     <h1 class="text-[2.75rem] font-medium leading-[1.1] tracking-tight text-gray-900">{title}</h1>
