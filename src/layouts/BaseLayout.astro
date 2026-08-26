@@ -55,7 +55,8 @@ const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site).href :
 const showNavHeader = !hideHeader && !pageTitle;
 const showPageHeader = !!pageTitle;
 const contentTopPadding = showPageHeader
-  ? 'pt-10'
+  // 56px — intentionally matches the media→media section gap in ArticleLayout.
+  ? 'pt-14'
   : showNavHeader
     ? 'pt-[112px] sm:pt-[120px]'
     : 'pt-4 sm:pt-6';

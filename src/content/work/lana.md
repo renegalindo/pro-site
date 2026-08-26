@@ -15,4 +15,8 @@ Lana was a wallet app and fintech marketplace built for the underbanked in Latin
 
 The architecture borrowed from WeChat's superapp model, where each mini app opened as a webview to select a service, then returned to the native core to sign the transaction. The same shell rendered different apps depending on the country, which enabled us to launch in Mexico, Peru and Chile with 15,000 accounts.
 
-![Lana home screen](/portfolio/lana-home.webp)
+![Lana](/portfolio/lana-1.webp)
+![Lana](/portfolio/lana-2.webp)
+![Lana](/portfolio/lana-3.webp)
+
+![Lana](/portfolio/lana-4.webp)

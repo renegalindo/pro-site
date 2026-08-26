@@ -106,6 +106,12 @@ const ctaText = ctaLabel ?? `Visit ${title}`;
     --breakout-w: min(64rem, 100vw - 2rem);
     width: var(--breakout-w);
     margin-left: calc(50% - var(--breakout-w) / 2);
+    /* Single source of truth for block-to-block vertical rhythm. Every media
+       paragraph owns a top gap and no bottom gap, so — because .prose is a flex
+       column (no margin collapse) — meta→media and media→media are always
+       exactly this value. Change the gap here and nowhere else. The last block's
+       bottom spacing comes from main's pb-24. */
+    @apply mt-14 mb-0; /* 56px section gap */
   }
 
   .prose :global(h2) {
@@ -171,7 +177,7 @@ const ctaText = ctaLabel ?? `Visit ${title}`;
      shift, which keeps scroll restoration intact on back/forward. `height: auto`
      lets that width drive height via the element's aspect ratio. */
   .prose :global(:is(img, video)) {
-    @apply block mx-auto my-16 rounded-2xl;
+    @apply block mx-auto rounded-2xl;
     height: auto;
   }
   /* `data-zoomable` is added by the lightbox once it wires the image up, so the
@@ -189,9 +195,9 @@ const ctaText = ctaLabel ?? `Visit ${title}`;
      blank line between them) lay out as an equal-width row that shares the
      column. Each image fills its track; heights differ naturally. */
   .prose :global(p:has(> img + img)) {
-    @apply my-16 flex gap-3;
+    @apply flex gap-3;
   }
   .prose :global(p:has(> img + img) > img) {
-    @apply my-0 w-full min-w-0 flex-1;
+    @apply w-full min-w-0 flex-1;
   }
 </style>
