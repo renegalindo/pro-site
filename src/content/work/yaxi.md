@@ -17,3 +17,7 @@ Yaxi was the first ride-hailing app in Mexico, even before Uber launched there. 
 ![Yaxi rider app](/portfolio/yaxi-app-3.webp)
 ![Yaxi rider app](/portfolio/yaxi-app-4.webp)
 
+![Yaxi rider app](/portfolio/yaxi-app-7.webp)
+
+![Yaxi rider app](/portfolio/yaxi-app-5.webp)
+

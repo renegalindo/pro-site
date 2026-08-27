@@ -7,6 +7,11 @@ import { visit } from 'unist-util-visit';
 // `![alt](/path.mp4)` Markdown as any image, and this rewrites it at build time.
 const VIDEO_EXT = /\.(mp4|webm)$/i;
 
+// A YouTube watch/share/embed URL written as an image (`![alt](https://…)`)
+// becomes a responsive 16:9 embed. Pulls the 11-char video id out of any of the
+// common URL shapes (watch?v=, youtu.be/…, /embed/…, /shorts/…).
+const YOUTUBE_ID = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/;
+
 // Map a public-absolute media src (e.g. `/portfolio/x.webp`) to its file on disk.
 const publicPath = (src) => `public${src}`;
 
@@ -41,6 +46,14 @@ function readDimensions(src) {
   }
 }
 
+// Shared tail of the media width formula: never upscale past the file's own
+// width, and cap height at 75vh (expressed as `75vh * ratio`). Both the image
+// sizing pass and the before/after container compose this with their own
+// leading caps (`100%` vs the breakout column), so the no-upscale/height-cap
+// logic and the ratio live in one place.
+const noUpscaleHeightCap = (dims) =>
+  `${dims.width}px, calc(75vh * ${(dims.width / dims.height).toFixed(4)})`;
+
 /**
  * Rehype plugin: prepare Markdown media for the case-study pages.
  *
@@ -60,12 +73,114 @@ function readDimensions(src) {
  * `p:has(> video)` / `p:has(> img)` break-out styling applies unchanged, and
  * the alt text becomes the accessible label.
  */
+// Build a before/after comparison slider in place of the authored paragraph.
+// Both images fill the same box (object-fit: cover, matching aspect ratio); the
+// "before" layer is clipped from the right by `--pos`, and a full-width, visually
+// hidden range input drives `--pos` — giving pointer-drag, click-to-position and
+// keyboard control for free. The container reserves its space via an inline
+// aspect-ratio (from the before image's real dimensions), like every other media
+// block, so it can't shift the page as the images load.
+function buildBeforeAfter(pNode, beforeImg, afterImg) {
+  const beforeSrc = (beforeImg.properties.src || '').split('#')[0];
+  const afterSrc = (afterImg.properties.src || '').split('#')[0];
+  const beforeAlt = beforeImg.properties.alt || 'Before';
+  const afterAlt = afterImg.properties.alt || 'After';
+  const dims = readDimensions(beforeSrc);
+
+  const img = (src, alt, className) => ({
+    type: 'element',
+    tagName: 'img',
+    // `dataBa` marks these so the sizing pass below leaves them alone (the box is
+    // reserved on the container, and the images are laid out by the slider CSS).
+    properties: { src, alt, className, draggable: false, dataBa: true },
+    children: [],
+  });
+  const div = (className, children) => ({
+    type: 'element',
+    tagName: 'div',
+    properties: { className },
+    children,
+  });
+  pNode.tagName = 'div';
+  pNode.properties = {
+    className: ['before-after'],
+    // Same width formula as images (see the sizing pass): capped by the reading
+    // column, the file's own width (never upscale) and 75vh of height (via
+    // `75vh * ratio`) — so the box reserves its height with no letterboxing and
+    // the aspect ratio is always preserved. `aspect-ratio` drives that height,
+    // and `margin-left: calc(50% - w/2)` centres the (wider-than-column) block on
+    // the page, exactly as the media-paragraph rule does — margins, not transform
+    // (which the content-reveal animates).
+    style: dims
+      ? `--ba-w: min(64rem, 100vw - 2rem, ${noUpscaleHeightCap(dims)}); aspect-ratio: ${dims.width} / ${dims.height}; width: var(--ba-w); margin-left: calc(50% - var(--ba-w) / 2)`
+      : undefined,
+  };
+  pNode.children = [
+    img(afterSrc, afterAlt, ['ba-img', 'ba-after']),
+    div(['ba-clip'], [img(beforeSrc, beforeAlt, ['ba-img', 'ba-before'])]),
+    div(['ba-divider'], [div(['ba-handle'], [])]),
+    {
+      type: 'element',
+      tagName: 'input',
+      properties: {
+        type: 'range',
+        min: '0',
+        max: '100',
+        value: '50',
+        className: ['ba-range'],
+        ariaLabel: `Reveal slider: ${beforeAlt} on the left, ${afterAlt} on the right`,
+      },
+      children: [],
+    },
+  ];
+}
+
 export default function rehypeMedia() {
   return (tree) => {
+    // Pass 1: before/after sliders. A paragraph holding exactly two images whose
+    // srcs carry the `#before` and `#after` fragments becomes a comparison slider.
+    visit(tree, 'element', (node) => {
+      if (node.tagName !== 'p') return;
+      const imgs = node.children.filter(
+        (c) => c.type === 'element' && c.tagName === 'img',
+      );
+      if (imgs.length !== 2) return;
+      const frag = (im) => (im.properties?.src || '').split('#')[1];
+      if (frag(imgs[0]) === 'before' && frag(imgs[1]) === 'after') {
+        buildBeforeAfter(node, imgs[0], imgs[1]);
+      }
+    });
+
+    // Pass 2: size images / convert videos.
     visit(tree, 'element', (node) => {
       if (node.tagName !== 'img') return;
+      // Slider images are laid out by the before/after CSS — skip sizing them.
+      if (node.properties?.dataBa) return;
       const rawSrc = node.properties?.src;
       if (typeof rawSrc !== 'string') return;
+
+      // A YouTube URL becomes a responsive 16:9 embed. `youtube-nocookie` is the
+      // privacy-preserving host (no tracking cookie until the visitor plays).
+      // `aspect-ratio: 16 / 9` + a definite width reserves the box before the
+      // iframe loads, exactly like the image/video sizing below.
+      const yt = rawSrc.match(YOUTUBE_ID);
+      if (yt) {
+        const alt = node.properties.alt;
+        node.tagName = 'iframe';
+        node.properties = {
+          src: `https://www.youtube-nocookie.com/embed/${yt[1]}`,
+          title: alt || 'YouTube video',
+          loading: 'lazy',
+          allow:
+            'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+          allowFullscreen: true,
+          // Fills the breakout width its parent paragraph already gets from the
+          // media-paragraph rule; `aspect-ratio` reserves the height before load.
+          style: 'aspect-ratio: 16 / 9; width: 100%',
+        };
+        node.children = [];
+        return;
+      }
 
       // Split off an optional `#…` fragment: it selects the mode, not the file.
       const [src, fragment] = rawSrc.split('#');
@@ -95,7 +210,7 @@ export default function rehypeMedia() {
         ? {
             width: dims.width,
             height: dims.height,
-            style: `width: min(100%, ${dims.width}px, calc(75vh * ${(dims.width / dims.height).toFixed(4)}))`,
+            style: `width: min(100%, ${noUpscaleHeightCap(dims)})`,
           }
         : {};
 

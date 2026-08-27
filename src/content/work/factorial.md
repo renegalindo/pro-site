@@ -17,3 +17,8 @@ Inspired by Notion's block model and Shadcn's UI primitives, we set out to strea
 The redesign shipped as the biggest design update since the company's founding, reaching 1M users across 20 countries, and set the path to scale 30 products without reinventing the wheel for every new feature.
 
 ![Factorial](/portfolio/factorial-video.mp4#controls)
+
+![Factorial employees list, before the redesign](/portfolio/factorial-before.webp#before)
+![Factorial organization view, after the redesign](/portfolio/factorial-after.webp#after)
+
+![Factorial](/portfolio/factorial-4.webp)

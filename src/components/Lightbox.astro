@@ -49,7 +49,7 @@
 
   .lightbox-image {
     position: relative;
-    max-width: min(64rem, 100vw - 3rem);
+    max-width: min(90rem, 100vw - 3rem);
     max-height: calc(100vh - 7rem);
     width: auto;
     height: auto;
@@ -139,6 +139,8 @@
     // Tag article images as zoomable on every load (markdown can't add the
     // attribute itself). The `/now` snapshots already carry `[data-zoomable]`.
     document.querySelectorAll<HTMLImageElement>('.prose img:not([data-zoomable])').forEach((img) => {
+      // Before/after slider images are driven by their own control — never zoom.
+      if (img.closest('.before-after')) return;
       img.setAttribute('data-zoomable', '');
       img.setAttribute('role', 'button');
       img.setAttribute('tabindex', '0');

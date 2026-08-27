@@ -1,0 +1,184 @@
+---
+// Global styles + behaviour for before/after comparison sliders. The markup is
+// emitted by the rehype-media plugin from a `#before` / `#after` image pair in a
+// case-study's Markdown; this component ships the CSS and the driver script once
+// (like Lightbox), so authoring stays pure Markdown. Include once in BaseLayout.
+---
+
+<style is:global>
+  /* Sits in the gallery like any other media block: `order: 1` drops it below
+     the meta line, and the breakout width + centring mirror the media-paragraph
+     rule in ArticleLayout. `aspect-ratio` + `max-width` come inline from the
+     image's real dimensions, so the box reserves its height before load. */
+  .prose .before-after {
+    position: relative;
+    /* `order`, the 56px section gap and the breakout `--breakout-w` are inherited
+       from the media-paragraph rule in ArticleLayout (this selector is folded
+       into it), so the vertical rhythm stays single-sourced. Width, aspect-ratio
+       and the centring `margin-left` are set inline by the rehype-media plugin. */
+    overflow: hidden;
+    border-radius: 1rem;
+    /* Handle position; updated by the range input via JS. */
+    --pos: 50%;
+    touch-action: pan-y; /* let vertical scroll through; horizontal drives the slider */
+    user-select: none;
+  }
+
+  /* Both layers fill the box identically; matching aspect ratios mean `cover`
+     never crops. The "before" layer is clipped from the right by `--pos`. */
+  .before-after .ba-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin: 0;
+    border-radius: 0;
+    display: block;
+    pointer-events: none;
+  }
+  .before-after .ba-clip {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+  }
+
+  /* The vertical divider and its grab handle, parked at `--pos`. Non-interactive
+     — the invisible range input on top owns all the pointer/keyboard input. */
+  .before-after .ba-divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos);
+    width: 2px;
+    margin-left: -1px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 1px rgba(10, 10, 10, 0.08);
+    pointer-events: none;
+  }
+  .before-after .ba-handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow:
+      0 0 0 1px rgba(10, 10, 10, 0.06),
+      0 4px 12px -2px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease-out;
+  }
+  /* Chevrons (‹ ›) on the handle, drawn with borders. `left`/`right` animate so
+     they can spread apart on hover (see the hover rule). */
+  .before-after .ba-handle::before,
+  .before-after .ba-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 0.45rem;
+    height: 0.45rem;
+    border: 2.5px solid #374151;
+    border-width: 2.5px 2.5px 0 0;
+    transition:
+      left 0.15s ease-out,
+      right 0.15s ease-out;
+  }
+  .before-after .ba-handle::before {
+    left: 0.6rem;
+    transform: translateY(-50%) rotate(-135deg); /* points left */
+  }
+  .before-after .ba-handle::after {
+    right: 0.6rem;
+    transform: translateY(-50%) rotate(45deg); /* points right */
+  }
+
+  /* Hover: the handle grows a touch and the chevrons spread outward, so it reads
+     as an obviously draggable control against the busy UI behind it. */
+  .before-after:hover .ba-handle {
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+  .before-after:hover .ba-handle::before {
+    left: 0.5rem;
+  }
+  .before-after:hover .ba-handle::after {
+    right: 0.5rem;
+  }
+  /* Dragging wins over hover — declared last for a slightly firmer press-grow. */
+  .before-after.ba-dragging .ba-handle {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  /* The real control: a full-bleed range input, visually hidden, sitting on top.
+     Gives pointer-drag, click-to-position and keyboard (arrows) for free. */
+  .before-after .ba-range {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background: transparent;
+    opacity: 0;
+    cursor: ew-resize;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .before-after .ba-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 2.5rem;
+    height: 100%;
+    cursor: ew-resize;
+  }
+  .before-after .ba-range::-moz-range-thumb {
+    width: 2.5rem;
+    height: 100%;
+    border: 0;
+    cursor: ew-resize;
+  }
+  /* Keyboard focus lands on the range — show a ring on the handle instead. */
+  .before-after:focus-within .ba-handle {
+    outline: 2px solid #111827;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .before-after .ba-handle {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function setupBeforeAfter() {
+    document.querySelectorAll<HTMLElement>('.before-after').forEach((el) => {
+      if (el.dataset.baReady) return;
+      el.dataset.baReady = 'true';
+
+      const range = el.querySelector<HTMLInputElement>('.ba-range');
+      if (!range) return;
+
+      // The native range input is the single source of position: its value
+      // (already clamped to 0–100) maps straight onto the `--pos` CSS var the
+      // clip-path and divider read. Drag, click-to-position and arrow keys all
+      // route through its `input` event.
+      const syncPos = () => el.style.setProperty('--pos', `${range.value}%`);
+      range.addEventListener('input', syncPos);
+
+      // Handle-scale affordance only while actively dragging.
+      range.addEventListener('pointerdown', () => el.classList.add('ba-dragging'));
+      const endDrag = () => el.classList.remove('ba-dragging');
+      range.addEventListener('pointerup', endDrag);
+      range.addEventListener('pointercancel', endDrag);
+      range.addEventListener('blur', endDrag);
+
+      syncPos();
+    });
+  }
+
+  setupBeforeAfter();
+  document.addEventListener('astro:page-load', setupBeforeAfter);
+</script>

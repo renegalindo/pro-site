@@ -12,4 +12,8 @@ externalUrl: "https://invopop.com/"
 
 Invopop is a platform for automating invoice and tax compliance around the world. I joined as the first employee and led design from the pre-seed deck to the Console, the web app where developers manage their invoicing workflows and API keys. I also collaborated with Berta Porta on brand design for both Invopop and [GOBL](https://gobl.org/), the open source format that powers it.
 
-![Invopop Console](/portfolio/invopop.png)
+![Invopop Console](/portfolio/invopop-1.webp)
+
+![Invopop Console](/portfolio/invopop-2.webp)
+
+![Invopop Console](/portfolio/invopop-3.webp)

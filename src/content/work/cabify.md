@@ -16,3 +16,5 @@ Cabify is one of the largest ride-hailing companies in Spain and Latin America. 
 
 ![Cabify rider app](/portfolio/cabify-rider-2.webp)
 ![Cabify rider app](/portfolio/cabify-rider-1.webp)
+
+![Cabify branded car in Madrid](/portfolio/cabify-6.webp)

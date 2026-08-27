@@ -101,7 +101,8 @@ const ctaText = ctaLabel ?? `Visit ${title}`;
      on the page. Centring uses margin (not transform) on purpose: the content
      reveal animates `transform`, which would otherwise clobber the centring.
      `order: 1` drops the whole gallery below the meta line. */
-  .prose :global(p:has(> :is(img, video))) {
+  .prose :global(p:has(> :is(img, video, iframe))),
+  .prose :global(.before-after) {
     order: 1;
     --breakout-w: min(64rem, 100vw - 2rem);
     width: var(--breakout-w);
@@ -176,9 +177,14 @@ const ctaText = ctaLabel ?? `Visit ${title}`;
      dimensions so the box reserves its space before the file loads — no layout
      shift, which keeps scroll restoration intact on back/forward. `height: auto`
      lets that width drive height via the element's aspect ratio. */
-  .prose :global(:is(img, video)) {
+  .prose :global(:is(img, video, iframe)) {
     @apply block mx-auto rounded-2xl;
     height: auto;
+  }
+  /* YouTube embeds carry no intrinsic size — the border and the `aspect-ratio`
+     (set inline by the media plugin) give them their box. */
+  .prose :global(iframe) {
+    @apply border-0;
   }
   /* `data-zoomable` is added by the lightbox once it wires the image up, so the
      zoom cursor only shows when the image is actually interactive. */
@@ -187,7 +193,7 @@ const ctaText = ctaLabel ?? `Visit ${title}`;
   }
 
   /* A single image or video centered in its own paragraph. */
-  .prose :global(p:has(> :is(img, video):only-child)) {
+  .prose :global(p:has(> :is(img, video, iframe):only-child)) {
     @apply text-center;
   }
 

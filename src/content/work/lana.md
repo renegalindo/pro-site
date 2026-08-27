@@ -20,3 +20,7 @@ The architecture borrowed from WeChat's superapp model, where each mini app open
 ![Lana](/portfolio/lana-3.webp)
 
 ![Lana](/portfolio/lana-4.webp)
+![Lana](/portfolio/lana-5.webp)
+![Lana](/portfolio/lana-6.webp)
+
+![Lana](/portfolio/lana-8.webp)
