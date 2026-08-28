@@ -21,4 +21,6 @@ The redesign shipped as the biggest design update since the company's founding, 
 ![Factorial employees list, before the redesign](/portfolio/factorial-before.webp#before)
 ![Factorial organization view, after the redesign](/portfolio/factorial-after.webp#after)
 
-![Factorial](/portfolio/factorial-4.webp)
+![Factorial](/portfolio/factorial-5.webp)
+
+![Factorial](/portfolio/factorial-6.webp)
