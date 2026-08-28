@@ -5,6 +5,7 @@ import PageHeader from '@/components/PageHeader.astro';
 import Footer from '@/components/Footer.astro';
 import Lightbox from '@/components/Lightbox.astro';
 import BeforeAfter from '@/components/BeforeAfter.astro';
+import VideoPlayer from '@/components/VideoPlayer.astro';
 import SectionRail from '@/components/SectionRail.astro';
 import type { RailItem } from '@/lib/rail';
 import '@/styles/page-transitions.css';
@@ -20,6 +21,9 @@ interface Props {
     href: string;
     label: string;
   };
+  /** Cycling prev/next project links for the page header's top-right nav. */
+  prevHref?: string;
+  nextHref?: string;
   rail?: { heading?: string; items: RailItem[] };
   /** Opt out of the staggered content reveal — for full-screen takeover pages
       (e.g. the portfolio deck) that aren't a stack of document blocks and own
@@ -42,6 +46,8 @@ const {
   pageTagline,
   hideFooter = false,
   backLink,
+  prevHref,
+  nextHref,
   rail,
   noStagger = false,
   previewGated = false,
@@ -56,10 +62,12 @@ const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site).href :
 const showNavHeader = !hideHeader && !pageTitle;
 const showPageHeader = !!pageTitle;
 const contentTopPadding = showPageHeader
-  // 56px — intentionally matches the media→media section gap in ArticleLayout.
-  ? 'pt-14'
+  // 36px — the title and its intro are a coupled pair, kept clearly tighter
+  // than the 56px media→media section gap used for the gallery lower down the
+  // page, while giving the big display title a little more air than the h2 tier.
+  ? 'pt-9'
   : showNavHeader
-    ? 'pt-[112px] sm:pt-[120px]'
+    ? 'pt-[104px] sm:pt-[112px]'
     : 'pt-4 sm:pt-6';
 ---
 
@@ -250,7 +258,7 @@ const contentTopPadding = showPageHeader
   <body class="bg-gray-50 text-gray-900 antialiased">
     <div class="min-h-screen flex flex-col">
       <Header hidden={!showNavHeader} />
-      {showPageHeader && <PageHeader title={pageTitle!} tagline={pageTagline} backLink={backLink} />}
+      {showPageHeader && <PageHeader title={pageTitle!} tagline={pageTagline} backLink={backLink} prevHref={prevHref} nextHref={nextHref} />}
       <main data-no-stagger={noStagger ? '' : undefined} class:list={[
         "flex-1 w-full max-w-2xl mx-auto px-4 pb-24 text-[17px]",
         contentTopPadding,
@@ -280,6 +288,7 @@ const contentTopPadding = showPageHeader
 
     <Lightbox transition:persist />
     <BeforeAfter />
+    <VideoPlayer />
 
     <script>
       // Preview mode gate. Runs on every load/navigation so the client router —

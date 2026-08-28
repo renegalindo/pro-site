@@ -32,14 +32,11 @@ const work = defineCollection({
     // to `externalUrl` instead, so in-progress drafts stay hidden.
     published: z.boolean().default(false),
     // The live product URL. A draft card links here (new tab); also shown as the
-    // outbound link inside a detail page.
+    // outbound link inside a detail page. When set, the detail page renders a CTA
+    // button on the meta line under the write-up (its presence is derived from
+    // this URL — there's no separate opt-in flag).
     externalUrl: z.string().url().optional(),
-    // Show a CTA button (opening `externalUrl` in a new tab) on the detail page,
-    // on the meta line under the write-up. Off by default so it's opt-in per
-    // project — the list card already links out, so this is only for pages that
-    // warrant a deliberate "go try the live thing" prompt.
-    cta: z.boolean().default(false),
-    // Overrides the CTA's label (default `Visit <name>`). Set when the outbound
+    // Overrides the CTA's label (default `Go to website`). Set when the outbound
     // destination isn't the product itself — e.g. a LinkedIn or video link.
     ctaLabel: z.string().optional(),
   }),

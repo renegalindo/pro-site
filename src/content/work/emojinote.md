@@ -6,7 +6,8 @@ year: "2018"
 type: personal
 logo: "/logos/emojinote_logo.jpeg"
 published: true
-externalUrl: "https://www.youtube.com/watch?v=-08PnmPx3zg&t=31s"
+externalUrl: "https://marvelapp.com/blog/quest-find-happiest-notes-app/"
+ctaLabel: "Learn more"
 ---
 
 Emojinote is a note-taking iOS app for organizing notes with emoji. It is really that simple.
@@ -21,3 +22,5 @@ The app is free to download, with an in-app purchase to unlock unlimited. You ca
 ![Emojinote](/portfolio/emojinote-4.webp)
 
 ![Emojinote](/portfolio/emojinote-5.webp)
+
+![Emojinote demo](https://www.youtube.com/watch?v=-08PnmPx3zg)

@@ -71,28 +71,41 @@
       0 4px 12px -2px rgba(0, 0, 0, 0.25);
     transition: transform 0.15s ease-out;
   }
-  /* Chevrons (‹ ›) on the handle, drawn with borders. `left`/`right` animate so
-     they can spread apart on hover (see the hover rule). */
+  /* Lucide chevron-left / chevron-right on the handle, rendered by masking the
+     icon's SVG path so `background-color` tints it (currentColor-style). Drawn on
+     pseudo-elements — the handle div is emitted empty by the rehype-media plugin,
+     so there's no slot for an SVG element; the mask is the way to use the real
+     Lucide glyph here. `left`/`right` animate so they spread apart on hover. */
   .before-after .ba-handle::before,
   .before-after .ba-handle::after {
     content: '';
     position: absolute;
     top: 50%;
-    width: 0.45rem;
-    height: 0.45rem;
-    border: 2.5px solid #374151;
-    border-width: 2.5px 2.5px 0 0;
+    width: 0.9rem;
+    height: 0.9rem;
+    background-color: #374151;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    transform: translateY(-50%);
     transition:
       left 0.15s ease-out,
       right 0.15s ease-out;
   }
   .before-after .ba-handle::before {
-    left: 0.6rem;
-    transform: translateY(-50%) rotate(-135deg); /* points left */
+    left: 0.35rem;
+    /* Lucide chevron-left */
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m15%2018-6-6%206-6'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m15%2018-6-6%206-6'/%3E%3C/svg%3E");
   }
   .before-after .ba-handle::after {
-    right: 0.6rem;
-    transform: translateY(-50%) rotate(45deg); /* points right */
+    right: 0.35rem;
+    /* Lucide chevron-right */
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m9%2018%206-6-6-6'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='m9%2018%206-6-6-6'/%3E%3C/svg%3E");
   }
 
   /* Hover: the handle grows a touch and the chevrons spread outward, so it reads
@@ -101,10 +114,10 @@
     transform: translate(-50%, -50%) scale(1.06);
   }
   .before-after:hover .ba-handle::before {
-    left: 0.5rem;
+    left: 0.25rem;
   }
   .before-after:hover .ba-handle::after {
-    right: 0.5rem;
+    right: 0.25rem;
   }
   /* Dragging wins over hover — declared last for a slightly firmer press-grow. */
   .before-after.ba-dragging .ba-handle {
@@ -141,7 +154,7 @@
   }
   /* Keyboard focus lands on the range — show a ring on the handle instead. */
   .before-after:focus-within .ba-handle {
-    outline: 2px solid #111827;
+    outline: 2px solid rgba(17, 24, 39, 0.3);
     outline-offset: 2px;
   }
 

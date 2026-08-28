@@ -13,19 +13,34 @@ export async function getStaticPaths() {
   const work = await getCollection('work');
   const ordered = orderedWork(work);
 
+  // Prev/next cycle runs over the *published* list only, so the top-right nav
+  // never lands a normal visitor on a gated draft. It wraps: prev of the first
+  // is the last, next of the last is the first. Unpublished pages (preview only)
+  // sit outside the cycle and simply get no nav.
+  const cycle = orderedWork(work.filter((p) => p.data.published));
+
   return ordered.map((project) => {
+    const i = cycle.findIndex((p) => p.slug === project.slug);
+    const n = cycle.length;
+    const hasNav = i !== -1 && n > 1;
     return {
       params: { slug: project.slug },
-      props: { project },
+      props: {
+        project,
+        prevHref: hasNav ? `/work/${cycle[(i - 1 + n) % n].slug}` : undefined,
+        nextHref: hasNav ? `/work/${cycle[(i + 1) % n].slug}` : undefined,
+      },
     };
   });
 }
 
 interface Props {
   project: CollectionEntry<'work'>;
+  prevHref?: string;
+  nextHref?: string;
 }
 
-const { project } = Astro.props;
+const { project, prevHref, nextHref } = Astro.props;
 const { Content } = await project.render();
 ---
 
@@ -34,9 +49,11 @@ const { Content } = await project.render();
   description={project.data.description ?? project.data.name}
   role={project.data.role}
   year={project.data.year}
-  externalUrl={project.data.cta ? project.data.externalUrl : undefined}
+  externalUrl={project.data.externalUrl}
   ctaLabel={project.data.ctaLabel}
   backLink={{ href: '/work', label: 'Work' }}
+  prevHref={prevHref}
+  nextHref={nextHref}
   hideFooter
   previewGated={!project.data.published}
   previewRedirect={project.data.externalUrl ?? '/work'}

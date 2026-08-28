@@ -24,6 +24,9 @@ interface Props {
       destination isn't the product itself (e.g. a LinkedIn or video link). */
   ctaLabel?: string;
   backLink?: { href: string; label: string };
+  /** Cycling prev/next project links, shown top-right. Both set or neither. */
+  prevHref?: string;
+  nextHref?: string;
   hideFooter?: boolean;
   /** When true, this is an unpublished project page: gate it behind preview
       mode (noindex + redirect a normal visitor away). Forwarded to BaseLayout. */
@@ -42,6 +45,8 @@ const {
   externalUrl,
   ctaLabel,
   backLink,
+  prevHref,
+  nextHref,
   hideFooter = false,
   previewGated = false,
   previewRedirect,
@@ -49,7 +54,7 @@ const {
 
 // Role and year read as a single meta line: "Role · Year". Either may be absent.
 const meta = [role, year].filter(Boolean).join(' · ');
-const ctaText = ctaLabel ?? `Visit ${title}`;
+const ctaText = ctaLabel ?? 'Go to website';
 ---
 
 <BaseLayout
@@ -58,6 +63,8 @@ const ctaText = ctaLabel ?? `Visit ${title}`;
   pageTitle={pageTitle}
   pageTagline={pageTagline}
   backLink={backLink}
+  prevHref={prevHref}
+  nextHref={nextHref}
   hideFooter={hideFooter}
   previewGated={previewGated}
   previewRedirect={previewRedirect}
@@ -77,7 +84,7 @@ const ctaText = ctaLabel ?? `Visit ${title}`;
             rel="noopener noreferrer"
           >
             {ctaText}
-            <ArrowUpRight size={16} aria-hidden="true" />
+            <ArrowUpRight size={16} stroke-width={1.5} aria-hidden="true" />
           </a>
         )}
       </div>
@@ -116,40 +123,43 @@ const ctaText = ctaLabel ?? `Visit ${title}`;
   }
 
   .prose :global(h2) {
-    @apply text-xl font-medium text-gray-900 mt-8 mb-4;
+    @apply text-[1.375rem] font-medium text-gray-900 mt-8 mb-4;
   }
 
   .prose :global(h3) {
-    @apply text-lg font-medium text-gray-900 mt-6 mb-3;
+    @apply text-[1.1875rem] font-medium text-gray-900 mt-6 mb-3;
   }
 
   .prose :global(p) {
     @apply mb-4;
   }
 
-  /* The byline block — Role · Year, then the live-product CTA stacked below it,
-     both left-aligned — sitting between the write-up and the gallery (placement
-     via the flex `order` scheme above; order 0 keeps it above the order-1
-     media). `gap-6` matches the write-up → byline spacing (last paragraph's
-     `mb-4` + this row's `mt-2`), so the button sits an equal step below. */
+  /* The byline row — Role · Year on the left, the live-product CTA aligned to
+     the right on the same line — sitting between the write-up and the gallery
+     (placement via the flex `order` scheme above; order 0 keeps it above the
+     order-1 media). Wraps on narrow screens; `ml-auto` on the CTA keeps it
+     right-aligned even when it drops to its own line. */
   .prose .meta-row {
-    @apply mt-2 flex flex-col items-start gap-6;
+    @apply mt-2 flex flex-wrap items-center gap-4;
   }
 
   /* Role · Year. Same size as the body, toned down as metadata. */
   .prose .meta {
-    @apply m-0 text-gray-500;
+    @apply m-0 text-base text-gray-500;
   }
 
-  /* Live-product CTA. A small solid pill — the one deliberately prominent action
-     on an otherwise muted page. Overrides the `.prose a` / `main a` link styles
-     (underline, hover colour) that would otherwise apply. A 2px optical nudge
-     (`-ml-0.5`) so the pill reads as flush with the text column above. */
+  /* Live-product CTA. A small, quiet outline button — white fill, light-grey
+     border — sitting right-aligned on the byline row (`ml-auto` pushes it to the
+     far edge and keeps it there when the row wraps). Overrides the `.prose a` /
+     `main a` link styles (underline, hover colour) that would otherwise apply. */
   .prose .cta {
-    @apply -ml-0.5 inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-4 py-2 text-sm text-white no-underline transition-colors;
+    @apply ml-auto inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-sm text-gray-900 no-underline transition duration-150 active:scale-[0.97] motion-reduce:active:scale-100;
   }
   .prose .cta:hover {
-    @apply bg-gray-700 text-white;
+    @apply border-gray-300 bg-gray-50 text-gray-900;
+  }
+  .prose .cta:active {
+    @apply bg-gray-100;
   }
   .prose .cta:focus-visible {
     @apply outline outline-2 outline-offset-2 outline-gray-400;

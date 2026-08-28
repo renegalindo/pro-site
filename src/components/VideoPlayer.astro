@@ -1,0 +1,134 @@
+---
+// Custom play affordance for the user-driven (`#controls`) case-study videos.
+// The browser's native play button can't be resized, so instead of fighting it
+// we lay our own overlay over the poster: a big play button styled after
+// YouTube's overlay buttons — a translucent black disc with a solid white,
+// softly-shadowed icon. Click anywhere on the overlay to start; once playback
+// begins the overlay fades out for good and the native controls take over.
+// Ambient autoplay clips have no `controls` attr, so they're never touched.
+// Ships CSS + behaviour once, like BeforeAfter/Lightbox.
+---
+
+<style is:global>
+  /* The breakout <p> that holds the video becomes the positioning context for
+     the overlay. It already sizes to the video (its only block child), so an
+     inset-0 overlay lands exactly over the frame. */
+  .prose .video-player {
+    position: relative;
+  }
+
+  /* Full-frame click target — "click anywhere on the poster to play". Carries a
+     soft dim over the poster so the disc reads clearly on any frame; both fade
+     out together once playback starts (native controls own the session). */
+  .prose .video-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    /* Match the video's rounded-2xl corners so the dim doesn't poke out past them. */
+    border-radius: 1rem;
+    background: rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: opacity 0.25s ease-out;
+  }
+  .prose .video-player.is-playing .video-play {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* The disc: translucent black with a solid white, softly-shadowed icon —
+     YouTube's overlay-button style, scaled up as the primary action. */
+  .prose .video-play-disc {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+    transition:
+      transform 0.15s ease-out,
+      background-color 0.15s ease-out;
+  }
+  .prose .video-play:hover .video-play-disc {
+    transform: scale(1.03);
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .prose .video-play:active .video-play-disc {
+    transform: scale(0.97);
+  }
+  .prose .video-play:focus-visible {
+    outline: none;
+  }
+  .prose .video-play:focus-visible .video-play-disc {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+
+  /* Filled play triangle, solid white with a shadow that lifts it off the frame.
+     The glyph is right-heavy by construction, so it reads as optically centred. */
+  .prose .video-play-disc svg {
+    width: 1.9rem;
+    height: 1.9rem;
+    color: #fff;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .prose .video-play,
+    .prose .video-play-disc {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function setupVideoPlayers() {
+    // Only the user-driven clips carry `controls` (ambient autoplay ones don't),
+    // so this enhances exactly the videos that show a poster and wait for a tap.
+    document.querySelectorAll<HTMLVideoElement>('video[controls]').forEach((video) => {
+      if (video.dataset.playReady) return;
+      video.dataset.playReady = 'true';
+
+      const holder = video.parentElement;
+      if (!holder) return;
+      holder.classList.add('video-player');
+
+      // Hide the native control bar while the poster + our overlay are shown, so
+      // there's a single play affordance. Done in JS only: with no JS the
+      // `controls` attribute stays and the native player works as a fallback.
+      video.controls = false;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'video-play';
+      btn.setAttribute('aria-label', 'Play video');
+      btn.innerHTML =
+        '<span class="video-play-disc"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>';
+      holder.appendChild(btn);
+
+      btn.addEventListener('click', () => {
+        const p = video.play();
+        if (p) p.catch(() => {});
+      });
+
+      // On first play: retire the overlay for good and hand control to the
+      // native player (which we'd hidden until now).
+      video.addEventListener(
+        'play',
+        () => {
+          holder.classList.add('is-playing');
+          video.controls = true;
+        },
+        { once: true },
+      );
+    });
+  }
+
+  setupVideoPlayers();
+  document.addEventListener('astro:page-load', setupVideoPlayers);
+</script>

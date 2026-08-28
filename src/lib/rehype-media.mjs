@@ -237,7 +237,17 @@ export default function rehypeMedia() {
         ...sizeProps,
         ...(hasPoster ? { poster: posterSrc } : {}),
         ...(wantsControls
-          ? { controls: true, preload: 'metadata', playsInline: true }
+          ? {
+              controls: true,
+              preload: 'metadata',
+              playsInline: true,
+              // Native-control cleanups: strip the overflow menu's download and
+              // cast options, and drop the Picture-in-Picture button, so the
+              // player shows only the essentials (play, scrub, volume,
+              // fullscreen). Fullscreen is kept — useful for viewing the work.
+              controlsList: 'nodownload noremoteplayback',
+              disablePictureInPicture: true,
+            }
           : { autoPlay: true, loop: true, muted: true, playsInline: true }),
         ...(alt ? { ariaLabel: alt } : {}),
       };
