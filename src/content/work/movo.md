@@ -7,6 +7,7 @@ type: company
 order: 2
 logo: "/logos/movo_logo.webp"
 published: true
+externalUrl: "https://cabify.com/es/pasajeros/motos-electricas"
 ---
 
 Movo was a scooter-sharing service started inside [Cabify](/work/cabify) in 2018. It launched as a separate mobile app and brand because tensions with the taxi industry were high at the time, and Cabify's fleet was often vandalized and [even burned](https://www.elconfidencial.com/espana/andalucia/2017-05-02/quemar-cabify-feria-abril-sevilla-nueve-calcinados_1376064/).
