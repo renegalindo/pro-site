@@ -183,7 +183,12 @@ export default function rehypeMedia() {
       }
 
       // Split off an optional `#…` fragment: it selects the mode, not the file.
+      // Write the fragment-stripped path back now so no mode marker (e.g. `#fill`,
+      // `#controls`) ever rides along on the emitted URL — the video/YouTube
+      // branches rebuild `properties` from `src` anyway, so this covers the image
+      // branch too, in one place for the whole element pass.
       const [src, fragment] = rawSrc.split('#');
+      node.properties.src = src;
       const dims = readDimensions(src);
 
       // The whole point of this plugin is to reserve each media box so it can't
@@ -198,19 +203,29 @@ export default function rehypeMedia() {
         );
       }
 
+      // `#fill` opts a single landscape block out of the 75vh height cap so it
+      // fills the reading column (up to its own width) instead of being trimmed
+      // narrower on short viewports — used for browser-window screenshots so they
+      // line up with the other gallery images. Only the width formula changes;
+      // radius, ring, lightbox and every other page are untouched.
+      const fillColumn = fragment === 'fill';
+
       // Size hints shared by images and videos: the `width`/`height` attributes
-      // give the browser the aspect ratio, and the inline `width` bakes in both
+      // give the browser the aspect ratio, and the inline `width` bakes in the
       // display caps — container width, the media's own intrinsic width (never
-      // upscale), and 75vh of height (via `75vh * ratio`). Because every term is
-      // a definite length, the box reserves its full height *before* the file
-      // loads, with no letterboxing (box always equals the media) — see the
-      // matching `height: auto` rule in ArticleLayout. In the multi-image flex
-      // row, `flex: 1 1 0%` overrides this inline width, so rows are unaffected.
+      // upscale), and (unless `#fill`) 75vh of height (via `75vh * ratio`).
+      // Because every term is a definite length, the box reserves its full height
+      // *before* the file loads, with no letterboxing (box always equals the
+      // media) — see the matching `height: auto` rule in ArticleLayout. In the
+      // multi-image flex row, `flex: 1 1 0%` overrides this inline width, so rows
+      // are unaffected.
       const sizeProps = dims
         ? {
             width: dims.width,
             height: dims.height,
-            style: `width: min(100%, ${noUpscaleHeightCap(dims)})`,
+            style: `width: min(100%, ${
+              fillColumn ? `${dims.width}px` : noUpscaleHeightCap(dims)
+            })`,
           }
         : {};
 

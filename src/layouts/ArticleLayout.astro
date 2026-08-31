@@ -191,6 +191,22 @@ const ctaText = ctaLabel ?? 'Go to website';
     @apply block mx-auto rounded-2xl;
     height: auto;
   }
+  /* Separate light-backgrounded media (e.g. white screenshots) from the gray-50
+     page. A hairline ring sits just outside the image edge, plus a whisper of
+     shadow to lift it. The ring is translucent, so it's self-adaptive — all but
+     invisible on dark or colourful images, just enough to catch the edge of a
+     white one — which is why it can apply to every media block with no per-image
+     tuning. Drawn with box-shadow (not border) so it never covers screenshot
+     pixels and never changes the reserved layout box. The `.ba-img` exclusion
+     keeps it off the before/after slider's stacked images (the slider frames
+     itself). The lightbox paints its own matching ring on a separate element,
+     so this never bleeds into the zoomed view. */
+  .prose :global(:is(img, video, iframe):not(.ba-img)) {
+    box-shadow:
+      0 0 0 1px rgba(17, 24, 39, 0.05),
+      0 1px 2px rgba(17, 24, 39, 0.04),
+      0 10px 28px -14px rgba(17, 24, 39, 0.15);
+  }
   /* YouTube embeds carry no intrinsic size — the border and the `aspect-ratio`
      (set inline by the media plugin) give them their box. */
   .prose :global(iframe) {
