@@ -1,6 +1,6 @@
 ---
 name: "Invopop"
-description: "Product and brand from zero to one"
+description: "Invoicing infrastructure for global businesses."
 company: "Invopop"
 role: "Founding Designer"
 year: "2021-2023"

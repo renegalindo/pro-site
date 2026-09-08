@@ -1,6 +1,6 @@
 ---
 name: "Blank Page"
-description: "The simplest way to write online"
+description: "The simplest app to write and share your thoughts."
 role: "Founder"
 year: "Now"
 type: personal

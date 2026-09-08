@@ -1,6 +1,6 @@
 ---
 name: "Cabify"
-description: "Led rebrand, Rider app, and Movo"
+description: "Ride-hailing platform in Spain and Latin America."
 company: "Cabify"
 role: "Lead Product Designer"
 year: "2016-2018"

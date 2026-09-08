@@ -1,6 +1,6 @@
 ---
 name: "Factorial"
-description: "Built and led design system teams"
+description: "All-in-one HR platform."
 company: "Factorial"
 role: "Product Design Director"
 year: "2024-2025"

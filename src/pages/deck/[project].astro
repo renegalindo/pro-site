@@ -28,7 +28,7 @@ const projects = parsePortfolio(raw);
 const initialSection = Math.max(0, projects.findIndex((p) => p.slug === slug));
 ---
 
-<BaseLayout title="Deck" description="Slide-deck prototype" hideHeader hideFooter noStagger>
+<BaseLayout title="Deck" description="A slide deck prototype." hideHeader hideFooter noStagger>
   {/* basePath/exitHref default to /deck — the mount point here. Pass them
       explicitly only if the deck is ever mounted under a different path. */}
   <Deck projects={projects} initialSection={initialSection} />

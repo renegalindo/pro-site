@@ -1,5 +1,6 @@
 ---
 name: "Palamatch"
+description: "Find your perfect padel racket online."
 role: "Design Partner"
 year: "2026"
 type: client

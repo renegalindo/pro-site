@@ -1,6 +1,6 @@
 ---
 name: "Lana"
-description: "Founding designer, from zero to one"
+description: "A fintech wallet for the underbanked."
 company: "Lana"
 role: "Design Lead"
 year: "2019-2021"

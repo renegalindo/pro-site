@@ -1,6 +1,6 @@
 ---
 name: "Emojinote"
-description: "Organize your notes with emoji"
+description: "Organize your notes with emoji."
 role: "Side project"
 year: "2018"
 type: personal

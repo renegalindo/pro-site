@@ -1,5 +1,6 @@
 ---
 name: "Axyom"
+description: "Cybersecurity AI for teams without an expert."
 role: "Design Partner"
 year: "2026"
 type: client

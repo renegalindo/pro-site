@@ -1,5 +1,6 @@
 ---
 name: "Movo"
+description: "Scooter-sharing app, launched inside Cabify."
 company: "Cabify · Movo"
 role: "Design Lead"
 year: "2018-2019"

@@ -1,6 +1,6 @@
 ---
 name: "Yaxi"
-description: "The first taxi app in Mexico"
+description: "First taxi app in Mexico."
 company: "Yaxi"
 role: "Product Designer"
 year: "2014-2015"
