@@ -25,7 +25,10 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
 ---
 
 <header id="site-header" class:list={[
-  "top-0 z-10 w-full bg-gray-50",
+  // Frosted chrome lives on the ::before layer below (so the mask that feathers
+  // the blur doesn't also fade the avatar/menu). Kept in sync with the mobile
+  // bar in PageHeader.astro so the whole site's top chrome reads as one material.
+  "top-0 z-10 w-full",
   hidden ? "absolute opacity-0 pointer-events-none" : "fixed"
 ]}>
   <div class="header-inner max-w-2xl mx-auto px-4">
@@ -92,6 +95,28 @@ const currentLabel = activeLink && activeLink.href !== '/' ? activeLink.label : 
      watchHeaderCollapse on scroll; every collapsing value interpolates from it
      via calc(), so the shrink tracks the scrollbar instead of snapping. The
      default keeps the expanded state before/without JS (SSR). */
+  /* Frosted backdrop layer. On ::before (behind the avatar/menu) so its mask —
+     which feathers the blur+tint out over the bottom third for a progressive
+     blur with no hard seam — never touches the content above it. Mostly-opaque
+     page-bg tint as the fallback; the blur + more translucent tint only kick in
+     where backdrop-filter is supported. Matches PageHeader.astro's mobile bar. */
+  #site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: rgb(249 250 251 / 0.9);
+    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent);
+    mask-image: linear-gradient(to bottom, black 70%, transparent);
+  }
+  @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    #site-header::before {
+      background-color: rgb(249 250 251 / 0.8);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+  }
+
   #site-header {
     --t: 0;
     /* Avatar box and the avatar↔label gap both collapse with --t. The dropdown

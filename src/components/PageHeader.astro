@@ -33,15 +33,20 @@ const cycleLinks = [
       `pointer-events-auto`. */}
   {(backLink || prevHref || nextHref) && (
     <Fragment>
-      {/* Scrim behind the bar — mobile only (`sm:hidden`). On a phone the content
-          column is full-width, so scrolled body text would otherwise pass behind
-          the transparent controls and collide with them; on desktop they sit out
-          in the wide margins, clear of the centred text, so no scrim is needed. A
-          soft top-down fade (iOS large-title style) dissolves content under the
-          bar. `pointer-events-none` so it never swallows a tap. */}
+      {/* Frosted bar behind the controls — mobile only (`sm:hidden`). On a phone
+          the content column is full-width, so scrolled content would otherwise
+          pass behind the transparent controls and collide with them; on desktop
+          they sit out in the wide margins, clear of the centred text, so no bar
+          is needed. Same frosted recipe as the root header (Header.astro) so the
+          site's top chrome reads as one material: mostly-opaque page-bg tint
+          (legible fallback) and a light blur of content underneath. The
+          `mask-image` feathers the blur+tint out over the bottom third so the
+          filter eases to zero (progressive blur) instead of stopping on a hard
+          line — no half-blurred seam where a text row straddles the edge.
+          `pointer-events-none` so it never swallows a tap. */}
       <div
         aria-hidden="true"
-        class="pointer-events-none fixed inset-x-0 top-0 z-30 h-20 bg-gradient-to-b from-gray-50 from-40% to-transparent sm:hidden"
+        class="pointer-events-none fixed inset-x-0 top-0 z-30 h-14 bg-gray-50/90 backdrop-blur-sm supports-[backdrop-filter]:bg-gray-50/80 [-webkit-mask-image:linear-gradient(to_bottom,black_70%,transparent)] [mask-image:linear-gradient(to_bottom,black_70%,transparent)] sm:hidden"
       />
       <div class="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center justify-between px-3.5 py-3.5 sm:px-5 sm:py-5">
         {backLink ? (
