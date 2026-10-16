@@ -5,7 +5,7 @@
 
 // First wink lands soon after load so visitors catch it; later ones are rarer.
 const FIRST_DELAY = [2500, 4500];
-const REPEAT_DELAY = [9000, 20000];
+const REPEAT_DELAY = [7000, 14000];
 
 const WINK_DURATION = 640;
 
@@ -24,8 +24,8 @@ const EYE_KEYFRAMES: Keyframe[] = [
 // Head: tips in with the wink and settles back a beat after the eye reopens.
 const HEAD_KEYFRAMES: Keyframe[] = [
   { transform: 'rotate(0deg)', easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
-  { transform: 'rotate(4deg)', offset: 0.3 },
-  { transform: 'rotate(4deg)', offset: 0.45, easing: 'cubic-bezier(0.45, 0, 0.55, 1)' },
+  { transform: 'rotate(-4deg)', offset: 0.3 },
+  { transform: 'rotate(-4deg)', offset: 0.45, easing: 'cubic-bezier(0.45, 0, 0.55, 1)' },
   { transform: 'rotate(0deg)' },
 ];
 
